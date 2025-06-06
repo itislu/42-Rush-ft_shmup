@@ -1,0 +1,15 @@
+{
+	libncurses
+	Memcheck:Leak
+	...
+	obj:*libncurses.so.*
+	...
+}
+{
+   _nc_keypad
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_nc_keypad
+   ...
+}

@@ -1,0 +1,34 @@
+CompileFlags:
+  Add: [-Wall, -Wextra, -Werror, --language=c, "-Iinc"]
+  Compiler: cc
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      [
+        "bugprone-*",
+        "clang-analyzer-*",
+        "misc-*",
+        "performance-*",
+        "readability-*",
+      ]
+    Remove:
+      [
+        bugprone-easily-swappable-parameters,
+        misc-no-recursion,
+        readability-braces-around-statements,
+        readability-identifier-length,
+      ]
+    CheckOptions:
+      readability-magic-numbers.IgnoredIntegerValues: "1;2;3;4;10"
+      readability-magic-numbers.IgnorePowersOf2IntegerValues: Yes
+      readability-magic-numbers.IgnoredFloatingPointValues: "0.1"
+    FastCheckFilter: None
+  MissingIncludes: Strict
+
+InlayHints:
+  BlockEnd: No
+  Designators: Yes
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
