@@ -6,9 +6,20 @@
 #    By: ldulling <ldulling@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/09/25 12:48:32 by ldulling          #+#    #+#              #
-#    Updated: 2025/06/06 16:09:16 by ldulling         ###   ########.fr        #
+#    Updated: 2025/06/06 18:30:26 by ldulling         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+
+# For compatibility with new build system
+
+MAKEFLAGS		+=	--silent --no-builtin-rules --no-builtin-variables
+SHELL			:=	/bin/bash
+MSG_ARCHIVE		:=	"🔒"
+MSG_PROGRESS	:=	"📦"
+
+.DEFAULT		:
+				: # do nothing if target unknown
 
 
 # ***************************** CONFIGURATION ******************************** #
@@ -31,8 +42,8 @@ S				:=	src/
 SOURCELISTS		:=	sourcelist.mk
 
 # Flags:
-CC				?=	cc
-CFLAGS			?=	-Wall -Wextra -Werror -pedantic
+CC				:=	cc
+CFLAGS			:=	-Wall -Wextra -Werror -pedantic
 INCFLAGS		:=	$(addprefix -I,$I)
 DEBUGFLAGS		:=	-g
 ARFLAGS			:=	rcs
@@ -54,10 +65,12 @@ DEP_SUBDIRS		:=	$(sort $(dir $(DEP)))
 all				:	$(NAME)
 
 $(NAME)			:	$(OBJ)
-					ar $(ARFLAGS) $(NAME) $(OBJ)
+					ar $(ARFLAGS) $(NAME) $(OBJ) \
+						&& echo -e -n $(MSG_ARCHIVE)
 
 $(OBJ):	$O%.o	:	$S%.c | $(OBJ_SUBDIRS)
-					$(CC) $(CFLAGS) $(INCFLAGS) -c $< -o $@
+					$(CC) $(CFLAGS) $(INCFLAGS) -c $< -o $@ \
+						&& echo -e -n $(MSG_PROGRESS)
 
 $(DEP):	$D%.d	:	$S%.c | $(DEP_SUBDIRS)
 	@				$(CC) $(CFLAGS) $(INCFLAGS) -M -MP -MF $@ -MT "$O$*.o $@" $<
