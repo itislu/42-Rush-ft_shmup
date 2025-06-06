@@ -6,7 +6,7 @@
 /*   By: ldulling <ldulling@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/11 00:35:15 by ldulling          #+#    #+#             */
-/*   Updated: 2025/05/28 21:36:05 by ldulling         ###   ########.fr       */
+/*   Updated: 2025/06/06 16:24:25 by ldulling         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,19 +22,19 @@
  * @param lst     The address of the pointer to the first node of the list.
  * @param tail    The address of the pointer to the last node of the list.
  *                If tail (not *tail) is NULL, it is ignored.
- * @param new     The new node to be added to the list.
- *                If new is NULL, the function does nothing.
+ * @param node    The new node to be added to the list.
+ *                If node is NULL, the function does nothing.
  */
-void	ft_lstadd_back_tail(t_list **lst, t_list **tail, t_list *new)
+void	ft_lstadd_back_tail(t_list **lst, t_list **tail, t_list *node)
 {
-	if (lst == NULL || tail == NULL || new == NULL)
+	if (lst == NULL || tail == NULL || node == NULL)
 	{
-		ft_lstadd_back(lst, new);
+		ft_lstadd_back(lst, node);
 		return ;
 	}
 	if (*lst == NULL || *tail == NULL)
-		ft_lstadd_back(lst, new);
+		ft_lstadd_back(lst, node);
 	else
-		(*tail)->next = new;
-	*tail = new;
+		(*tail)->next = node;
+	*tail = node;
 }

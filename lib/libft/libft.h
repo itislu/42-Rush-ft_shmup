@@ -6,7 +6,7 @@
 /*   By: ldulling <ldulling@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 16:17:46 by ldulling          #+#    #+#             */
-/*   Updated: 2025/06/06 17:48:35 by ldulling         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:49:42 by ldulling         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ int				ft_toupper(int c) \
 \
 /* Lists doubly-linked */
 
-void			ft_lstadd_back_d(t_list_d **lst, t_list_d *new);
-void			ft_lstadd_front_d(t_list_d **lst, t_list_d *new);
+void			ft_lstadd_back_d(t_list_d **lst, t_list_d *node);
+void			ft_lstadd_front_d(t_list_d **lst, t_list_d *node);
 void			ft_lstclear_d(t_list_d **lst, void (*del)(void *));
 void			ft_lstdelone_d(t_list_d *lst, void (*del)(void *));
 void			ft_lstdrop_node_d(t_list_d **lst, t_list_d **node, \
@@ -64,18 +64,18 @@ int				ft_lstsize_d(const t_list_d *lst);
 \
 /* Lists singly-linked */
 
-void			ft_lstadd_back(t_list **lst, t_list *new);
-void			ft_lstadd_back_tail(t_list **lst, t_list **tail, t_list *new);
-void			ft_lstadd_front(t_list **lst, t_list *new);
+void			ft_lstadd_back(t_list **lst, t_list *node);
+void			ft_lstadd_back_tail(t_list **lst, t_list **tail, t_list *node);
+void			ft_lstadd_front(t_list **lst, t_list *node);
 void			ft_lstclear(t_list **lst, void (*del)(void *));
 void			ft_lstdelone(t_list *lst, void (*del)(void *));
 void			ft_lstdrop_node(t_list **lst, t_list **node, \
 								void (*del)(void *));
 t_list			*ft_lstdup(const t_list *lst, void *(*dup)(const void *), \
 							void (*del)(void *));
-void			ft_lstinsert_after(t_list **lst, t_list *new);
+void			ft_lstinsert_after(t_list **lst, t_list *node);
 void			ft_lstinsert_before(t_list **lst, const t_list *cur, \
-									t_list *new);
+									t_list *node);
 void			ft_lstiter(t_list *lst, void (*f)(void *));
 t_list			*ft_lstlast(t_list *lst);
 t_list			*ft_lstmap(const t_list *lst, void *(*f)(const void *), \

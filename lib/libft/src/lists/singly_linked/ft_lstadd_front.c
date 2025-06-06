@@ -6,7 +6,7 @@
 /*   By: ldulling <ldulling@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 16:04:18 by ldulling          #+#    #+#             */
-/*   Updated: 2025/01/29 10:09:23 by ldulling         ###   ########.fr       */
+/*   Updated: 2025/06/06 16:24:36 by ldulling         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,15 @@
 /**
  * Can prepend a whole list, not just one node.
  */
-void	ft_lstadd_front(t_list **lst, t_list *new)
+void	ft_lstadd_front(t_list **lst, t_list *node)
 {
-	if (lst == NULL || new == NULL)
+	if (lst == NULL || node == NULL)
 		return ;
 	if (*lst == NULL)
-		*lst = new;
+		*lst = node;
 	else
 	{
-		ft_lstadd_back(&new, *lst);
-		*lst = new;
+		ft_lstadd_back(&node, *lst);
+		*lst = node;
 	}
 }

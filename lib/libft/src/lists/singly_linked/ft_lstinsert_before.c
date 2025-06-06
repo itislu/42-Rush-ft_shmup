@@ -6,7 +6,7 @@
 /*   By: ldulling <ldulling@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/27 13:15:15 by ldulling          #+#    #+#             */
-/*   Updated: 2025/02/04 18:51:33 by ldulling         ###   ########.fr       */
+/*   Updated: 2025/06/06 16:25:01 by ldulling         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,19 +22,19 @@
  *               If *lst is NULL, the new node is set as the first node.
  * @param cur    The node before which the new node or list should be inserted.
  *               If cur cannot be found in lst, the function does nothing.
- * @param new    The new node or list to be inserted into the list.
+ * @param node   The new node or list to be inserted into the list.
  */
-void	ft_lstinsert_before(t_list **lst, const t_list *cur, t_list *new)
+void	ft_lstinsert_before(t_list **lst, const t_list *cur, t_list *node)
 {
 	t_list	*next;
 	t_list	*prev;
 
-	if (lst == NULL || new == NULL)
+	if (lst == NULL || node == NULL)
 		return ;
 	if (*lst == cur || *lst == NULL)
 	{
-		ft_lstlast(new)->next = *lst;
-		*lst = new;
+		ft_lstlast(node)->next = *lst;
+		*lst = node;
 		return ;
 	}
 	prev = *lst;
@@ -43,6 +43,6 @@ void	ft_lstinsert_before(t_list **lst, const t_list *cur, t_list *new)
 	if (prev == NULL)
 		return ;
 	next = prev->next;
-	prev->next = new;
-	ft_lstlast(new)->next = next;
+	prev->next = node;
+	ft_lstlast(node)->next = next;
 }
