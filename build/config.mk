@@ -42,7 +42,7 @@ CXX				:=	c++
 CXX_VERSION		:=	$(shell $(CXX) --version | head -1)
 IS_CLANG		:=	$(if $(findstring clang,$(CXX_VERSION)),true)
 IS_GCC			:=	$(if $(findstring g++,$(CXX_VERSION)),true)
-CXXFLAGS_STD	:=	-Wall -Wextra -Werror -Wpedantic -Wshadow -std=c++98
+CXXFLAGS_STD	:=	-Wall -Wextra -Werror -Wpedantic -Wshadow -std=c++17
 CXXFLAGS_DBG	:=	-ggdb3
 CXXFLAGS_SAN	:=	-fsanitize=address,undefined,bounds,float-divide-by-zero
 CXXFLAGS_OPT	:=	-O3 -flto$(if $(IS_GCC),=auto) -march=native -mtune=native
