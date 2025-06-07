@@ -13,7 +13,7 @@ COLOR_MAKE		=	$(STY_MAG)
 
 LIBS_LOCAL		=	$(LIB_ROOT_DIR)/libftpp/libftpp.a \
 					$(LIB_ROOT_DIR)/libft/libft.a
-LIBS_EXTERN		:=	ncurses
+LIBS_EXTERN		:=	ncursesw
 
 
 include				$(MAKEFILES_DIR)/config.mk

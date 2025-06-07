@@ -1,19 +1,42 @@
 #pragma once
 
-#include <ncurses.h>
+#include "../lib/libft/libft.h"
+#include <ncursesw/curses.h>
+#include <sys/time.h>
+#include <time.h>
 #include <vector>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <locale.h>
 
-#define MAX_MAP_HEIGHT 20
-#define MAX_MAP_WIDTH 20
+#define GAME_WINDOW_HEIGHT 21
+#define GAME_WINDOW_WIDTH 61
+#define GAME_WINDOW_Y 3
+#define GAME_WINDOW_X 0
+
+#define STATUS_WINDOW_HEIGHT 3
+#define STATUS_WINDOW_WIDTH 61
+#define STATUS_WINDOW_Y 0
+#define STATUS_WINDOW_X 0
+
+#define MAX_MAP_HEIGHT 19
+#define MAX_MAP_WIDTH 29
 
 #define MAX_ENEMIES 100
 #define MAX_BULLETS 100
+
+#define KEY_ESCAPE 27
+#define KEY_SPACE 32
+
+#define FPS 60
 
 enum entity_type
 {
 	PLAYER,
 	BASIC_ENEMY,
-	BULLET,
+	PLAYER_BULLET,
+	ENEMY_BULLET,
 	COLLIDABLE,
 };
 
@@ -29,20 +52,26 @@ struct window
 struct coordinate {
 	int x;
 	int y;
+
+	bool operator==(const coordinate& other) {
+		return x == other.x && y == other.y;
+	}
 };
 
 struct entity
 {
-	int		type;
+	enum entity_type	type;
 	bool	status;
 	int		hp;
 	int		speed;
 	int		damage;
-	int		shoot_cooldown;
-	int		move_cooldown;
+	long		invis_frames;
+	long		shoot_cooldown;
+	long		move_cooldown;
 	std::vector<coordinate>	pattern;
-	int		pattern_idx;
-	coordinate	pos;
+	size_t		pattern_idx;
+	coordinate	previous_pos;
+	coordinate	current_pos;
 };
 
 // struct player : public entity 
@@ -57,9 +86,15 @@ struct entity
 
 struct game
 {
-	window	game_win;
-	window	status_win;
+	WINDOW	*game_win;
+	WINDOW	*status_win;
 	entity	player;
+	long	score;
+	long	time;
+	//entity	bullets[MAX_BULLETS];
+	/* window	game_win;
+	window	status_win;
+	entity	player;*/
 	std::vector<entity>	enemies;
 	std::vector<entity>	bullets;
 	std::vector<entity>	collidables;

@@ -71,6 +71,7 @@ VALGRINDFLAGS	=	--errors-for-leak-kinds=all \
 					--leak-check=full \
 					--show-error-list=yes \
 					--show-leak-kinds=all \
+					--suppressions=ncurses.supp
 					--trace-children=yes \
 					--track-origins=yes
 
