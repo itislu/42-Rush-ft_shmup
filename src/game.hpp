@@ -99,3 +99,13 @@ struct game
 	std::vector<entity>	bullets;
 	std::vector<entity>	collidables;
 };
+
+//background
+//collidables
+//levels
+//different enemies
+//boss
+//invis frame flash
+//game over/game ending
+//score
+//resize

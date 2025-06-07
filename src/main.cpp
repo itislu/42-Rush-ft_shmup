@@ -114,7 +114,11 @@ void	print_game(game *game)
 		{
 			
 			if (game->player.current_pos.y == y && game->player.current_pos.x == x)
+			{
+				//wattr_on(game->game_win, A_REVERSE, 0);
 				waddwstr(game->game_win, L"🛸");
+				//wattr_off(game->game_win, A_REVERSE, 0);
+			}
 			else if (is_bullet(game, y, x, PLAYER_BULLET))
 			{
 				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
@@ -130,7 +134,7 @@ void	print_game(game *game)
 				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 			}
 			else
-				wprintw(game->game_win, ".");
+				waddwstr(game->game_win, L"˖");//wprintw(game->game_win, ".");..
 			if (!is_enemy(game, y, x, BASIC_ENEMY) && !(game->player.current_pos.y == y && game->player.current_pos.x == x) && x != MAX_MAP_WIDTH - 1)
 				wprintw(game->game_win, " ");
 		}
