@@ -1,3 +1,4 @@
+#include "NcursesManager.hpp"
 #include "game.hpp"
 
 int main()
@@ -6,7 +7,7 @@ int main()
 
 	// print
 	// input
-	// update entities
+	// update game_objects
 	// spawn enemies
 	//
 	// game over check
