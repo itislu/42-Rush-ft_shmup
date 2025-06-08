@@ -4,6 +4,7 @@
 #include "background.hpp"
 #include "coordinate.hpp"
 #include "time.hpp"
+#include <array>
 #include <ncurses.h>
 #include <sys/time.h>
 #include <time.h>
@@ -31,7 +32,6 @@
 #define MAX_BULLETS 100
 
 #define KEY_ESCAPE 27
-#define KEY_SPACE 32
 
 #define FPS 60
 
@@ -56,6 +56,8 @@ enum entity_type
 	HOMING_BULLET,
 	COLLIDABLE,
 };
+
+struct game;
 
 struct window
 {
@@ -84,10 +86,26 @@ struct entity
 	coordinate	current_pos;
 };
 
-// struct player : public entity 
-// {
+struct player : public entity 
+{
+	constexpr static int max_players = 2;
+	constexpr static std::array<std::array<int, 5>, max_players> controls_sets = 
+		{{{'w', 'a', 's', 'd', ' '}, 
+		  {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, '\n'}}};
+	constexpr static std::array<const wchar_t[2], max_players> appearances =
+		{{{L"🛸"},
+		  {L"🚀"}}};
+	static int created_players;
 
-// };
+	player(coordinate position);
+	bool update(int input, game *game);
+	void shoot(game *game);
+	bool on_collision(entity *entity);
+	void print(WINDOW *game_win);
+	
+	const wchar_t *appearance;
+	std::array<int, 5> control_set;
+};
 
 // struct enemy : public entity
 // {
@@ -98,7 +116,7 @@ struct game
 {
 	WINDOW	*game_win;
 	WINDOW	*status_win;
-	entity	player;
+	std::vector<player> players;
 	long	score;
 	long	time;
 	long	enemy_spawn_cooldown;
