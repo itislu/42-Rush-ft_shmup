@@ -25,6 +25,7 @@ bool	init_ncurses()
 	init_pair(3, COLOR_YELLOW, -1);
 	init_pair(4, COLOR_BLUE, -1);
 	init_pair(5, COLOR_MAGENTA, -1);
+	init_pair(6, COLOR_CYAN, -1);
 	return (true);
 }
 
@@ -129,6 +130,11 @@ void	print_game(game *game)
 			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+		}
+		else if (bullet.type == ENEMY_1_BULLET) {
+			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_CYAN), 0);
+			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
+			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_CYAN), 0);
 		}
 		else if (bullet.type == HOMING_BULLET) {
 			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
@@ -245,18 +251,24 @@ void	update_entities(game *game)
 			&& get_current_time() - game->bullets[i].move_cooldown > 20)
 			move_p_bullet(&game->bullets[i]);
 		else if (game->bullets[i].status == 1
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 100)
+			&& (((game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == ENEMY_1_BULLET) && get_current_time() - game->bullets[i].move_cooldown > 100)
 				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
-		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_1)
+		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
-		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_1)
+		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET);
+		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
+			&& get_current_time() - game->enemies[i].move_cooldown > 350)
+				move_enemy(&game->enemies[i]);
+		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
+				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_1_BULLET);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
@@ -397,6 +409,7 @@ void	check_collisions(game *game)
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET)
 		{
 			check_bullet_collision(game, &game->bullets[i], ENEMY_BULLET);
+			check_bullet_collision(game, &game->bullets[i], ENEMY_1_BULLET);
 			check_bullet_collision(game, &game->bullets[i], HOMING_BULLET);
 			check_enemy_collision(game, &game->bullets[i], BASIC_ENEMY);
 			check_enemy_collision(game, &game->bullets[i], ENEMY_2);

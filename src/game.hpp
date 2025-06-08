@@ -52,6 +52,7 @@ enum entity_type
 	ENEMY_2, // shoots homing bullets
 	PLAYER_BULLET,
 	ENEMY_BULLET,
+	ENEMY_1_BULLET,
 	HOMING_BULLET,
 	COLLIDABLE,
 };
