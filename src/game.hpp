@@ -4,12 +4,12 @@
 #include "coordinate.hpp"
 #include <array>
 #include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <time.h>
-#include <vector>
-#include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <vector>
 
 #define GAME_WINDOW_Y 3
 #define GAME_WINDOW_X 0
