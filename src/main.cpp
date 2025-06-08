@@ -3,6 +3,7 @@
 #include <climits>
 #include <cstdlib>
 #include <optional>
+#include <sys/types.h>
 
 int map_width;
 int map_height;
@@ -118,6 +119,18 @@ bool	is_enemy(game *game, int y, int x, int type)
 
 } */
 
+void print_gameover(game *game)
+{
+	const size_t game_over_height = sizeof(game_over) / sizeof(game_over[0]);
+	const size_t game_over_width = 40;
+	const size_t start_y = (game->game_height / 2) - (game_over_height / 2);
+	const size_t start_x = (game->game_width / 2) - (game_over_width / 2);
+
+	for (int y = 0; y < 13; y++){
+		mvwaddwstr(game->game_win, start_y + y, start_x, game_over[y]);
+	}
+}
+
 void	print_game(game *game)
 {
 	// Clear window
@@ -190,9 +203,7 @@ void	print_game(game *game)
 		}
 	}
 	if (shared_players_hp(game) <= 0) {
-		for (int y = 0; y < 13; y++){
-			mvwaddwstr(game->game_win, y + 4, map_width / 2 - 2, game_over[y]);
-		}
+		print_gameover(game);
 	}
 
 	box(game->game_win, 0, 0);
