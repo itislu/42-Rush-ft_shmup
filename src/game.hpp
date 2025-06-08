@@ -40,6 +40,7 @@
 #define RIGHT {1, 0}
 #define LEFT {-1, 0}
 
+#define ENEMY_1_POINTS 5
 #define BASIC_ENEMY_POINTS 10
 #define ENEMY_2_POINTS 30
 
@@ -47,6 +48,7 @@ enum entity_type
 {
 	PLAYER,
 	BASIC_ENEMY,
+	ENEMY_1, //real basic enemy, just moves to left and shoots
 	ENEMY_2, // shoots homing bullets
 	PLAYER_BULLET,
 	ENEMY_BULLET,

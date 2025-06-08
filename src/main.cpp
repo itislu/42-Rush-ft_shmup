@@ -124,6 +124,9 @@ void	print_game(game *game)
 		else if (enemy.type == ENEMY_2) {
 			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👽");
 		}
+		else if (enemy.type == ENEMY_1) {
+			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🗿");
+		}
 	}
 	for (auto& collidable : game->collidables) {
 		if (!collidable.status) {
@@ -226,10 +229,10 @@ void	update_entities(game *game)
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
-		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_1)
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
-		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_1)
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
@@ -253,6 +256,21 @@ void	spawn_basic_enemy(game *game, int y, int x)
 	enemy.shoot_cooldown = get_current_time() - rand() % 2000;
 	enemy.move_cooldown = get_current_time();
 	enemy.pattern = {LEFT, DOWN, LEFT, UP};
+	game->enemies.push_back(enemy);
+}
+
+void	spawn_enemy_1(game *game, int y, int x)
+{
+	entity enemy = {};
+	enemy.status = 1;
+	enemy.type = ENEMY_1;
+	enemy.current_pos.y = y;
+	enemy.current_pos.x = x;
+	enemy.hp = 1;
+	enemy.damage = 1;
+	enemy.shoot_cooldown = get_current_time() - rand() % 2000;
+	enemy.move_cooldown = get_current_time();
+	enemy.pattern = {LEFT};
 	game->enemies.push_back(enemy);
 }
 
@@ -281,7 +299,10 @@ void	spawn_entities(game *game)
 	{
 		if (i == 1 && rand() % 3 == 0)
 		{
-			spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
+			if (rand() % 2 == 0)
+				spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
+			else
+				spawn_enemy_1(game, y, MAX_MAP_WIDTH - 1);
 			y++;
 		}
 		else if (i == -1 && rand() % 3 == 0)
@@ -321,6 +342,8 @@ void	check_enemy_collision(game *game, entity *entity, int type)
 				game->score += BASIC_ENEMY_POINTS;
 			else if (type == ENEMY_2)
 				game->score += ENEMY_2_POINTS;
+			else if (type == ENEMY_1)
+				game->score += ENEMY_1_POINTS;
 			game->enemies[i].status = false;
 			entity->status = false;
 			return ;
@@ -355,6 +378,7 @@ void	check_collisions(game *game)
 			check_bullet_collision(game, &game->bullets[i], HOMING_BULLET);
 			check_enemy_collision(game, &game->bullets[i], BASIC_ENEMY);
 			check_enemy_collision(game, &game->bullets[i], ENEMY_2);
+			check_enemy_collision(game, &game->bullets[i], ENEMY_1);
 		}
 		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET))
 		{
