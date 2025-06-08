@@ -672,17 +672,40 @@ void set_map_size()
     // map_width += map_width % 2;
 }
 
-/* int	menu()
+int	menu()
 {
-	game *game = get_game();
+	//game *game = get_game();
+	int i = 1;
 	while (1)
 	{
+		if (i == 1)
+		{
+			wattr_on(stdscr, A_REVERSE, 0);
+			mvprintw(0, 0, "Single Player");
+			wattr_off(stdscr, A_REVERSE, 0);
+			mvprintw(1, 0, "Multiplayer");
+		}
+		else
+		{
+			mvprintw(0, 0, "Single Player");
+			wattr_on(stdscr, A_REVERSE, 0);
+			mvprintw(1, 0, "Multiplayer");
+			wattr_off(stdscr, A_REVERSE, 0);
+		}
 		int input = tolower(getch());
 		if (input == 'q' || input == KEY_ESCAPE)
 			return -1;
-		if ()
+		if (input == 'w' || input == KEY_UP || input == 's' || input == KEY_DOWN)
+			i *= -1;
+		if (input == '\n')
+		{
+			if (i == 1)
+				return (1);
+			else
+				return (2);
+		}
 	}
-} */
+}
 
 int main()
 {
@@ -691,10 +714,15 @@ int main()
 	set_map_size();
 	
 	init_win();
-	init_players(2);
-	refresh();
-	print_stuff();
-	game_loop();
+	int i = menu();
+	if (i != -1)
+	{
+		init_players(i);
+		refresh();
+		print_stuff();
+		game_loop();
+	}
+	delete_win();
 	endwin();
 	return (0);
 	// print
