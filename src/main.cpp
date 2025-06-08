@@ -19,17 +19,9 @@ long	get_current_time_in_seconds(void)
 
 game *get_game(void)
 {
-	static game game;
+	static game game{};
 
 	return (&game);
-}
-
-void	init_game(void)
-{
-	game *game;
-
-	game = get_game();
-	memset(game, 0, sizeof(struct game));
 }
 
 bool	init_ncurses()
@@ -467,7 +459,6 @@ int main()
 {
 	if (!init_ncurses())
 		return (1);
-	init_game();
 	init_win();
 	init_player();
 	refresh();
