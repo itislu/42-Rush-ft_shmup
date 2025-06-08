@@ -241,7 +241,7 @@ void	update_entities(game *game)
 	}
 }
 
-void	spawn_basic_enemiy(game *game, int y, int x)
+void	spawn_basic_enemy(game *game, int y, int x)
 {
 	entity enemy = {};
 	enemy.status = 1;
@@ -279,7 +279,7 @@ void	spawn_entities(game *game)
 	{
 		if (i == 1 && rand() % 2 == 0)
 		{
-			spawn_basic_enemiy(game, y, MAX_MAP_WIDTH - 1);
+			spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
 			y++;
 		}
 		else if (i == -1 && rand() % 2 == 0)
