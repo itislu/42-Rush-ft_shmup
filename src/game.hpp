@@ -15,18 +15,12 @@
 #include <locale.h>
 #include <ctype.h>
 
-#define GAME_WINDOW_HEIGHT 21
-#define GAME_WINDOW_WIDTH 61
 #define GAME_WINDOW_Y 3
 #define GAME_WINDOW_X 0
 
-#define STATUS_WINDOW_HEIGHT 3
-#define STATUS_WINDOW_WIDTH 61
 #define STATUS_WINDOW_Y 0
 #define STATUS_WINDOW_X 0
-
-#define MAX_MAP_HEIGHT 19
-#define MAX_MAP_WIDTH 29
+#define STATUS_WINDOW_HEIGHT 3
 
 #define MAX_ENEMIES 100
 #define MAX_BULLETS 100
@@ -43,6 +37,9 @@
 #define ENEMY_1_POINTS 5
 #define BASIC_ENEMY_POINTS 10
 #define ENEMY_2_POINTS 30
+
+extern int map_width;
+extern int map_height;
 
 inline const wchar_t  *game_over[] = {
 	L"                                    ",
@@ -133,8 +130,16 @@ struct player : public entity
 
 struct game
 {
+	game();
+
 	WINDOW	*game_win;
 	WINDOW	*status_win;
+	int		term_height;
+	int		term_width;
+	int		game_height;
+	int		game_width;
+	int		status_height;
+	int		status_width;
 	std::vector<player> players;
 	long	score;
 	long	time;

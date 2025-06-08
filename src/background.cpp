@@ -9,7 +9,7 @@ background::background()
     : spawn_cooldown(0),
       move_cooldown(0)
 {
-	for (int x = 0; x < MAX_MAP_WIDTH - 1; ++x) {
+	for (int x = 0; x < map_width; ++x) {
 		spawn(x);
 	}
 }
@@ -19,7 +19,7 @@ void background::update()
 	// Spawn
 	if (get_current_time() - spawn_cooldown > 100) {
 		spawn_cooldown = get_current_time();
-		spawn(MAX_MAP_WIDTH - 1);
+		spawn(map_width);
 	}
 
 	// Move
@@ -38,7 +38,7 @@ void background::spawn(int x)
 	background_entity bg = {};
 	bg.pattern = {{-1, 0}};
 	bg.current_pos.x = x;
-	bg.current_pos.y = rand() % MAX_MAP_HEIGHT;
+	bg.current_pos.y = rand() % map_height;
 	bg.ch = charset[rand() % charset.size()];
 
 	entities.push_back(bg);
