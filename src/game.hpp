@@ -36,6 +36,9 @@
 #define RIGHT {1, 0}
 #define LEFT {-1, 0}
 
+#define BASIC_ENEMY_POINTS 10
+#define ENEMY_2_POINTS 30
+
 enum entity_type
 {
 	PLAYER,
@@ -100,6 +103,7 @@ struct game
 	entity	player;
 	long	score;
 	long	time;
+	long	enemy_spawn_cooldown;
 	//entity	bullets[MAX_BULLETS];
 	/* window	game_win;
 	window	status_win;

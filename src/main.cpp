@@ -167,7 +167,7 @@ void	print_stuff()
 
 void	spawn_player_bullet(game *game)
 {
-	if (get_current_time() - game->player.shoot_cooldown > 400)
+	if (get_current_time() - game->player.shoot_cooldown > 200)
 	{
 		game->player.shoot_cooldown = get_current_time();
 
@@ -185,7 +185,7 @@ void	spawn_player_bullet(game *game)
 void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type)
 {
 	enemy->shoot_cooldown = get_current_time();
-	if (rand() % 10 > 2)
+	if (rand() % 2 == 0)
 		return ;
 	entity bullet = {};
 	bullet.type = bullet_type;
@@ -239,9 +239,10 @@ void	update_entities(game *game)
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET
 			&& get_current_time() - game->bullets[i].move_cooldown > 20)
 			move_p_bullet(&game->bullets[i]);
-		else if (game->bullets[i].status == 1 && ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80) || (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 150)))
+		else if (game->bullets[i].status == 1
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 100)
+				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
 			move_enemy_bullets(game, &game->bullets[i]);
-		
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
@@ -249,13 +250,13 @@ void	update_entities(game *game)
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 2000)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 2500)
 				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET);
 	}
 }
@@ -269,6 +270,7 @@ void	spawn_basic_enemiy(game *game, int y, int x)
 	enemy.current_pos.x = x;
 	enemy.hp = 1;
 	enemy.damage = 1;
+	enemy.shoot_cooldown = get_current_time() - rand() % 2000;
 	enemy.pattern = {LEFT, DOWN, LEFT, UP};
 	game->enemies.push_back(enemy);
 }
@@ -282,21 +284,31 @@ void	spawn_enemy_2(game *game, int y, int x)
 	enemy.current_pos.x = x;
 	enemy.hp = 1;
 	enemy.damage = 1;
+	enemy.shoot_cooldown = get_current_time() + rand() % 1000;
 	enemy.pattern = {LEFT, UP, LEFT, DOWN, LEFT, DOWN, LEFT, UP};
 	game->enemies.push_back(enemy);
 }
 
 void	spawn_entities(game *game)
 {
+	static int i = 1;
+	if (!(get_current_time() - game->enemy_spawn_cooldown > 4000))
+		return ;
+	game->enemy_spawn_cooldown = get_current_time();
 	for (int y = 0; y < MAX_MAP_HEIGHT - 1; y++)
 	{
-		if (!is_enemy(game, y, MAX_MAP_WIDTH - 1, BASIC_ENEMY))
+		if (i == 1 && rand() % 2 == 0)
 		{
-			if (rand() % 2 == 0)
-				spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
-				//spawn_basic_enemiy(game, y, MAX_MAP_WIDTH - 1);
+			spawn_basic_enemiy(game, y, MAX_MAP_WIDTH - 1);
+			y++;
+		}
+		else if (i == -1 && rand() % 2 == 0)
+		{
+			spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
+			y++;
 		}
 	}
+	i *= -1;
 }
 
 void	check_bullet_collision(game *game, entity *entity, int type)
@@ -323,6 +335,10 @@ void	check_enemy_collision(game *game, entity *entity, int type)
 			|| (game->enemies[i].current_pos == entity->previous_pos 
 				&& game->enemies[i].previous_pos == entity->current_pos)))
 		{
+			if (type == BASIC_ENEMY)
+				game->score += BASIC_ENEMY_POINTS;
+			else if (type == ENEMY_2)
+				game->score += ENEMY_2_POINTS;
 			game->enemies[i].status = false;
 			entity->status = false;
 			return ;
@@ -401,7 +417,7 @@ bool	game_loop()
 	game->time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
 	srand(time(NULL));
-	spawn_entities(game);
+	//spawn_entities(game);
 	wclear(game->status_win);
 	while (1)
 	{
@@ -425,7 +441,9 @@ bool	game_loop()
 				spawn_player_bullet(game);
 			update_entities(game);
 			check_collisions(game);
-			//spawn_entities(game);
+			spawn_entities(game);
+			if (game->player.hp <= 0)
+				break ;
 			print_stuff();
 		}
 		else
