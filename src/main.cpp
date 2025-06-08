@@ -77,7 +77,7 @@ void	print_status(game *game)
 	const int shared_hp = shared_players_hp(game);
 	for (int i = 0; i < shared_hp; i++)
 	{
-		mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH / 2 - 4 + i * 3, L"❤️");
+		mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH / 2 - 9 + i * 3, L"❤️");
 	}
 	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
 	mvwprintw(game->status_win, 1, 4, " Time: %ld", get_current_time_in_seconds() - game->time);
@@ -161,6 +161,9 @@ void	print_game(game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
 		}
 	}
+	for (auto& player : game->players) {
+		player.print(game->game_win);
+	}
 	for (auto& enemy : game->enemies) {
 		if (!enemy.status) {
 			continue;
@@ -183,8 +186,10 @@ void	print_game(game *game)
 			continue;
 		}
 	}
-	for (auto& player : game->players) {
-		player.print(game->game_win);
+	if (shared_players_hp(game) <= 0) {
+		for (int y = 0; y < 13; y++){
+			mvwaddwstr(game->game_win, y + 4, MAX_MAP_WIDTH / 2 - 2, game_over[y]);
+		}
 	}
 
 	box(game->game_win, 0, 0);
@@ -607,16 +612,16 @@ bool	game_loop()
 			game->background.update();
 			if (shared_players_hp(game) <= 0)
 			{
-				nodelay(stdscr, FALSE);
-				print_stuff();
+				//nodelay(stdscr, FALSE);
+				// print_stuff();
 				for (auto& player : game->players) {
 					mvwaddwstr(game->game_win, player.current_pos.y + 1, (player.current_pos.x * 2) + 2, L"💥");
 				}
-				wrefresh(game->game_win);
-				input = tolower(getch());
-				while (input != 'q' && input != KEY_ESCAPE)
-					input = tolower(getch());
-				break ;
+				// wrefresh(game->game_win);
+				// input = tolower(getch());
+				// while (input != 'q' && input != KEY_ESCAPE)
+				// 	input = tolower(getch());
+				// break ;
 			}
 			print_stuff();
 		}
