@@ -1,9 +1,7 @@
 #pragma once
 
-#include "libft/libft.h"
 #include "background.hpp"
 #include "coordinate.hpp"
-#include "time.hpp"
 #include <array>
 #include <ncurses.h>
 #include <sys/time.h>
@@ -12,8 +10,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <locale.h>
-#include <ctype.h>
 
 #define GAME_WINDOW_Y 3
 #define GAME_WINDOW_X 0

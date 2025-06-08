@@ -1,10 +1,13 @@
 #include "game.hpp"
 #include "libftpp/format.hpp"
+#include "time.hpp"
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
+#include <ctype.h>
 #include <exception>
 #include <iostream>
+#include <locale.h>
 #include <optional>
 #include <sys/types.h>
 
