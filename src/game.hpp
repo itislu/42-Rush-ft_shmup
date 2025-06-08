@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../lib/libft/libft.h"
-#include <ncursesw/curses.h>
+#include "libft/libft.h"
+#include <ncurses.h>
 #include <sys/time.h>
 #include <time.h>
 #include <vector>
