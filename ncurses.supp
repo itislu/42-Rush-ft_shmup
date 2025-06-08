@@ -6,6 +6,13 @@
 	...
 }
 {
+	libncursesw
+	Memcheck:Leak
+	...
+	obj:*libncursesw.so.*
+	...
+}
+{
    _nc_keypad
    Memcheck:Leak
    match-leak-kinds: reachable

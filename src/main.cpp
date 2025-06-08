@@ -121,6 +121,9 @@ void	print_game(game *game)
 		if (enemy.type == BASIC_ENEMY) {
 			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👾");
 		}
+		else if (enemy.type == ENEMY_2) {
+			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👽");
+		}
 	}
 	for (auto& bullet : game->bullets) {
 		if (!bullet.status) {
@@ -135,6 +138,11 @@ void	print_game(game *game)
 			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+		}
+		else if (bullet.type == HOMING_BULLET) {
+			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"● ");
+			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
 		}
 	}
 	for (auto& collidable : game->collidables) {
@@ -174,12 +182,13 @@ void	spawn_player_bullet(game *game)
 	}
 }
 
-void	spawn_enemy_bullet(game *game, entity *enemy)
+void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type)
 {
 	enemy->shoot_cooldown = get_current_time();
-
+	if (rand() % 10 > 2)
+		return ;
 	entity bullet = {};
-	bullet.type = ENEMY_BULLET;
+	bullet.type = bullet_type;
 	bullet.status = 1;
 	bullet.damage = 1;
 	bullet.speed = 1000;
@@ -195,16 +204,24 @@ void	move_p_bullet(entity *bullet)
 	bullet->current_pos.x++;
 }
 
-void	move_enemy_bullets(game *game, entity  *bullet)
+void	move_enemy_bullets(game *game, entity *bullet)
 {
-	(void)game;
 	bullet->move_cooldown = get_current_time();
-	//if (bullet->current_pos.x + 1 == game->player.current_pos.x && bullet->current_pos.y + 1 == game->player.current_pos.y)
 	bullet->previous_pos = bullet->current_pos;
-	bullet->current_pos.x--;
+	if (bullet->type == HOMING_BULLET && bullet->direction == 0 && game->player.current_pos.y != bullet->current_pos.y && game->player.current_pos.x == bullet->current_pos.x)
+	{
+		if (game->player.current_pos.y < bullet->current_pos.y)
+			bullet->direction = -1;
+		else
+			bullet->direction = 1;
+	}
+	if (bullet->type == HOMING_BULLET && bullet->direction != 0)
+		bullet->current_pos.y += bullet->direction;
+	else
+		bullet->current_pos.x--;
 }
 
-void	move_basic_enemy(entity *enemy)
+void	move_enemy(entity *enemy)
 {
 	enemy->move_cooldown = get_current_time();
 	if (enemy->pattern_idx >= enemy->pattern.size())
@@ -217,14 +234,12 @@ void	move_basic_enemy(entity *enemy)
 
 void	update_entities(game *game)
 {
-	//PLAYER BULLETS FOR NOW
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET
 			&& get_current_time() - game->bullets[i].move_cooldown > 20)
 			move_p_bullet(&game->bullets[i]);
-		else if (game->bullets[i].status == 1 && game->bullets[i].type == ENEMY_BULLET
-			&& get_current_time() - game->bullets[i].move_cooldown > 50)
+		else if (game->bullets[i].status == 1 && ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80) || (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 150)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		
 	}
@@ -232,10 +247,16 @@ void	update_entities(game *game)
 	{
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
-				move_basic_enemy(&game->enemies[i]);
+				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 800)
-				spawn_enemy_bullet(game, &game->enemies[i]);
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
+				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET);
+		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
+			&& get_current_time() - game->enemies[i].move_cooldown > 350)
+				move_enemy(&game->enemies[i]);
+		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 2000)
+				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET);
 	}
 }
 
@@ -248,7 +269,20 @@ void	spawn_basic_enemiy(game *game, int y, int x)
 	enemy.current_pos.x = x;
 	enemy.hp = 1;
 	enemy.damage = 1;
-	enemy.pattern = {{-1, 0}, {0, 1}, {0, -1}, {-1, 0}};
+	enemy.pattern = {LEFT, DOWN, LEFT, UP};
+	game->enemies.push_back(enemy);
+}
+
+void	spawn_enemy_2(game *game, int y, int x)
+{
+	entity enemy = {};
+	enemy.status = 1;
+	enemy.type = ENEMY_2;
+	enemy.current_pos.y = y;
+	enemy.current_pos.x = x;
+	enemy.hp = 1;
+	enemy.damage = 1;
+	enemy.pattern = {LEFT, UP, LEFT, DOWN, LEFT, DOWN, LEFT, UP};
 	game->enemies.push_back(enemy);
 }
 
@@ -259,7 +293,8 @@ void	spawn_entities(game *game)
 		if (!is_enemy(game, y, MAX_MAP_WIDTH - 1, BASIC_ENEMY))
 		{
 			if (rand() % 2 == 0)
-				spawn_basic_enemiy(game, y, MAX_MAP_WIDTH - 1);
+				spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
+				//spawn_basic_enemiy(game, y, MAX_MAP_WIDTH - 1);
 		}
 	}
 }
@@ -319,9 +354,11 @@ bool	check_collisions(game *game)
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET)
 		{
 			check_bullet_collision(game, &game->bullets[i], ENEMY_BULLET);
+			check_bullet_collision(game, &game->bullets[i], HOMING_BULLET);
 			check_enemy_collision(game, &game->bullets[i], BASIC_ENEMY);
+			check_enemy_collision(game, &game->bullets[i], ENEMY_2);
 		}
-		if (game->bullets[i].status == 1 && game->bullets[i].type == ENEMY_BULLET)
+		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET))
 		{
 			check_player_collision(game, &game->bullets[i]);
 			//check_enemy_collision(game, &game->bullets[i], PLAYER);
@@ -330,7 +367,7 @@ bool	check_collisions(game *game)
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
-		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY)
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2))
 			check_player_collision(game, &game->enemies[i]);
 	}
 

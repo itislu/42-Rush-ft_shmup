@@ -31,12 +31,19 @@
 
 #define FPS 60
 
+#define UP {0, -1}
+#define DOWN {0, 1}
+#define RIGHT {1, 0}
+#define LEFT {-1, 0}
+
 enum entity_type
 {
 	PLAYER,
 	BASIC_ENEMY,
+	ENEMY_2, // shoots homing bullets
 	PLAYER_BULLET,
 	ENEMY_BULLET,
+	HOMING_BULLET,
 	COLLIDABLE,
 };
 
@@ -60,14 +67,16 @@ struct coordinate {
 
 struct entity
 {
-	enum entity_type	type;
+	int		type;
 	bool	status;
 	int		hp;
 	int		speed;
 	int		damage;
+	int		direction; //for homing bullets
 	long		invis_frames;
 	long		shoot_cooldown;
 	long		move_cooldown;
+	//long		spawn_cooldown;
 	std::vector<coordinate>	pattern;
 	size_t		pattern_idx;
 	coordinate	previous_pos;
