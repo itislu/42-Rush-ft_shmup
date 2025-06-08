@@ -364,7 +364,7 @@ bool	game_loop()
 	wclear(game->status_win);
 	while (1)
 	{
-		if (get_current_time() - time_reference > 1000 / FPS)
+		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)
 		{
 			time_reference = get_current_time();
 			int input = getch();
