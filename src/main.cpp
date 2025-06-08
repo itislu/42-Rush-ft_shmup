@@ -270,7 +270,8 @@ void	move_enemy_bullets(game *game, entity *bullet)
 	if (bullet->type == HOMING_BULLET && bullet->direction == 0)
 	{
 		auto nearest_player = find_nearest_player_in_x(game, bullet);
-		if (nearest_player && (*nearest_player)->current_pos.y != bullet->current_pos.y) 
+		if (nearest_player && (*nearest_player)->status 
+			&& (*nearest_player)->current_pos.y != bullet->current_pos.y) 
 		{
 			if ((*nearest_player)->current_pos.y < bullet->current_pos.y)
 				bullet->direction = -1;
