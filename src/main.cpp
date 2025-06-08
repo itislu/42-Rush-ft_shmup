@@ -94,17 +94,6 @@ void	print_game(game *game)
 	game->background.print(game->game_win);
 
 	// Entities
-	for (auto& enemy : game->enemies) {
-		if (!enemy.status) {
-			continue;
-		}
-		if (enemy.type == BASIC_ENEMY) {
-			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👾");
-		}
-		else if (enemy.type == ENEMY_2) {
-			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👽");
-		}
-	}
 	for (auto& bullet : game->bullets) {
 		if (!bullet.status) {
 			continue;
@@ -123,6 +112,17 @@ void	print_game(game *game)
 			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"● ");
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+		}
+	}
+	for (auto& enemy : game->enemies) {
+		if (!enemy.status) {
+			continue;
+		}
+		if (enemy.type == BASIC_ENEMY) {
+			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👾");
+		}
+		else if (enemy.type == ENEMY_2) {
+			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👽");
 		}
 	}
 	for (auto& collidable : game->collidables) {
