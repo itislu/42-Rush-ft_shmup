@@ -17,6 +17,9 @@ player::player(coordinate position)
 
 bool player::update(int input, game* game)
 {
+	if (!status) {
+		return false;
+	}
 	if (input == control_set[0] && current_pos.y != 0) {
 		current_pos.y--;
 	}
@@ -40,6 +43,9 @@ bool player::update(int input, game* game)
 
 void player::shoot(game* game)
 {
+	if (!status) {
+		return;
+	}
 	if (get_current_time() - shoot_cooldown > 200) {
 		shoot_cooldown = get_current_time();
 
@@ -70,10 +76,18 @@ bool player::on_collision(entity* entity)
 	else if (entity->type != BOSS) {
 		entity->status = false;
 	}
+	if (shared_players_hp(get_game()) <= 0) {
+		status = false;
+	}
 	return true;
 }
 
 void player::print(WINDOW* game_win)
 {
-	mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+	if (status) {
+		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+	}
+	else {
+		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, L"💥");
+	}
 }

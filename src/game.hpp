@@ -44,6 +44,22 @@
 #define BASIC_ENEMY_POINTS 10
 #define ENEMY_2_POINTS 30
 
+inline const wchar_t  *game_over[] = {
+	L"                                    ",
+	L"███▀▀▀██ ███▀▀▀███ ███▀█▄█▀███ ██▀▀▀",
+	L"██    ██ ██     ██ ██   █   ██ ██   ",
+	L"██   ▄▄▄ ██▄▄▄▄▄██ ██   ▀   ██ ██▀▀▀",
+	L"██    ██ ██     ██ ██       ██ ██   ",
+	L"███▄▄▄██ ██     ██ ██       ██ ██▄▄▄",
+	L"                                    ",
+	L"███▀▀▀███ ▀███  ██▀ ██▀▀▀ ██▀▀▀▀██▄ ",
+	L"██     ██   ██  ██  ██    ██     ██ ",
+	L"██     ██   ██  ██  ██▀▀▀ ██▄▄▄▄▄▀▀ ",
+	L"██     ██   ██  █▀  ██    ██     ██ ",
+	L"███▄▄▄███    ▀█▀    ██▄▄▄ ██     ██▄",
+	L"                                    "
+};
+
 enum entity_type
 {
 	PLAYER,
@@ -133,6 +149,9 @@ struct game
 	std::vector<entity>	collidables;
 	background	background;
 };
+
+int shared_players_hp(game *game);
+game *get_game(void);
 
 //background
 //collidables
