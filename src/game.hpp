@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libft/libft.h"
+#include "background.hpp"
 #include "coordinate.hpp"
 #include "time.hpp"
 #include <ncurses.h>
@@ -104,6 +105,7 @@ struct game
 	std::vector<entity>	enemies;
 	std::vector<entity>	bullets;
 	std::vector<entity>	collidables;
+	background	background;
 };
 
 //background

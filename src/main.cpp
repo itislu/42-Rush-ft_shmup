@@ -90,6 +90,10 @@ void	print_game(game *game)
 		}
 	}
 
+	// Background
+	game->background.print(game->game_win);
+
+	// Entities
 	for (auto& enemy : game->enemies) {
 		if (!enemy.status) {
 			continue;
@@ -339,7 +343,7 @@ void	check_player_collision(game *game, entity *entity)
 	}
 }
 
-bool	check_collisions(game *game)
+void	check_collisions(game *game)
 {
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
@@ -362,7 +366,10 @@ bool	check_collisions(game *game)
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2))
 			check_player_collision(game, &game->enemies[i]);
 	}
+}
 
+void	prune_inactive(game *game)
+{
 	game->bullets.erase(
 		std::remove_if(game->bullets.begin(), game->bullets.end(), 
 			[](entity& object){ 
@@ -382,8 +389,8 @@ bool	check_collisions(game *game)
 					return (false);
 			}), 
 		game->enemies.end());
-	
-	return (true);
+
+	game->background.prune();
 }
 
 bool	game_loop()
@@ -417,7 +424,9 @@ bool	game_loop()
 				spawn_player_bullet(game);
 			update_entities(game);
 			check_collisions(game);
+			prune_inactive(game);
 			spawn_entities(game);
+			game->background.update();
 			if (game->player.hp <= 0)
 				break ;
 			print_stuff();
