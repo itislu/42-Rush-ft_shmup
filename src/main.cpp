@@ -251,6 +251,7 @@ void	spawn_basic_enemy(game *game, int y, int x)
 	enemy.hp = 1;
 	enemy.damage = 1;
 	enemy.shoot_cooldown = get_current_time() - rand() % 2000;
+	enemy.move_cooldown = get_current_time();
 	enemy.pattern = {LEFT, DOWN, LEFT, UP};
 	game->enemies.push_back(enemy);
 }
@@ -265,6 +266,7 @@ void	spawn_enemy_2(game *game, int y, int x)
 	enemy.hp = 1;
 	enemy.damage = 1;
 	enemy.shoot_cooldown = get_current_time() + rand() % 1000;
+	enemy.move_cooldown = get_current_time();
 	enemy.pattern = {LEFT, UP, LEFT, DOWN, LEFT, DOWN, LEFT, UP};
 	game->enemies.push_back(enemy);
 }
@@ -277,12 +279,12 @@ void	spawn_entities(game *game)
 	game->enemy_spawn_cooldown = get_current_time();
 	for (int y = 0; y < MAX_MAP_HEIGHT - 1; y++)
 	{
-		if (i == 1 && rand() % 2 == 0)
+		if (i == 1 && rand() % 3 == 0)
 		{
 			spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
 			y++;
 		}
-		else if (i == -1 && rand() % 2 == 0)
+		else if (i == -1 && rand() % 3 == 0)
 		{
 			spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
 			y++;
@@ -407,7 +409,7 @@ bool	game_loop()
 		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)
 		{
 			time_reference = get_current_time();
-			int input = getch();
+			int input = tolower(getch());
 			if (input == 'q' || input == KEY_ESCAPE)
 				break ;
 			if (input == KEY_RESIZE)

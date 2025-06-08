@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <ctype.h>
 
 #define GAME_WINDOW_HEIGHT 21
 #define GAME_WINDOW_WIDTH 61
