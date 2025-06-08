@@ -40,6 +40,15 @@ void	init_win()
 	game *game = get_game();
 	game->game_win = create_win(GAME_WINDOW_HEIGHT, GAME_WINDOW_WIDTH, GAME_WINDOW_Y, GAME_WINDOW_X);
 	game->status_win = create_win(STATUS_WINDOW_HEIGHT, STATUS_WINDOW_WIDTH, STATUS_WINDOW_Y, STATUS_WINDOW_X);
+	wrefresh(game->game_win);
+	wrefresh(game->status_win);
+}
+
+void delete_win()
+{
+	game *game = get_game();
+	delwin(game->game_win);
+	delwin(game->status_win);
 }
 
 void	print_status(game *game)
@@ -373,7 +382,7 @@ void	check_player_collision(game *game, entity *entity)
 		|| (game->player.current_pos == entity->previous_pos
 			&& game->player.previous_pos == entity->current_pos)))
 	{
-		if (get_current_time() - game->player.invis_frames > 1000 || entity->type == BASIC_ENEMY)
+		if (get_current_time() - game->player.invis_frames > 1000 || entity->type == BASIC_ENEMY || entity->type == ENEMY_1 || entity->type == ENEMY_2)
 		{
 				game->player.invis_frames = get_current_time();
 				game->player.hp--;
@@ -404,7 +413,7 @@ void	check_collisions(game *game)
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
-		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2))
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2 || game->enemies[i].type == ENEMY_1))
 			check_player_collision(game, &game->enemies[i]);
 	}
 }
@@ -434,6 +443,30 @@ void	prune_inactive(game *game)
 	game->background.prune();
 }
 
+bool	check_terminal_size()
+{
+	int y;
+	int x;
+
+	getmaxyx(stdscr, y, x);
+	while (y < GAME_WINDOW_HEIGHT + STATUS_WINDOW_HEIGHT || x < GAME_WINDOW_WIDTH)
+	{
+		clear();
+		mvprintw(0, 0, "TERMINAL TOO SMALL");
+		mvprintw(1, 0, "  minimum: %dx%d", GAME_WINDOW_HEIGHT + STATUS_WINDOW_HEIGHT, GAME_WINDOW_WIDTH);
+		mvprintw(2, 0, "  current: %dx%d", y, x);
+		nodelay(stdscr, FALSE);
+		int input = tolower(getch());
+		if (input == 'q' || input == KEY_ESCAPE)
+			return false;
+		delete_win();
+		getmaxyx(stdscr, y, x);
+	}
+	init_win();
+	nodelay(stdscr, TRUE);
+	return (true);
+}
+
 bool	game_loop()
 {
 	game *game = get_game();
@@ -452,7 +485,10 @@ bool	game_loop()
 			if (input == 'q' || input == KEY_ESCAPE)
 				break ;
 			if (input == KEY_RESIZE)
-				;//call resize function
+			{
+				if (!check_terminal_size())
+				 return (true);
+			}
 			else if (input == 'w' && game->player.current_pos.y != 0)
 				game->player.current_pos.y--;
 			else if (input == 's' && game->player.current_pos.y != MAX_MAP_HEIGHT - 1)
@@ -469,7 +505,16 @@ bool	game_loop()
 			spawn_entities(game);
 			game->background.update();
 			if (game->player.hp <= 0)
+			{
+				nodelay(stdscr, FALSE);
+				print_stuff();
+				mvwaddwstr(game->game_win, game->player.current_pos.y + 1, (game->player.current_pos.x * 2) + 2, L"💥");
+				wrefresh(game->game_win);
+				input = tolower(getch());
+				while (input != 'q' && input != KEY_ESCAPE)
+					input = tolower(getch());
 				break ;
+			}
 			print_stuff();
 		}
 		else

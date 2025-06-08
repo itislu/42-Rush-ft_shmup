@@ -22,7 +22,7 @@ struct background
     void prune();
 
 	std::vector<background_entity> entities;
-	std::vector<const wchar_t*> charset = {L"𖥔", L"✦", L"˖", L"ᯓ", L".", L" ݁ "};
+	std::vector<const wchar_t*> charset = {L"𖥔", L"✦", L"˖", L".", L" ݁ "};
 	long spawn_cooldown;
 	long move_cooldown;
 };
