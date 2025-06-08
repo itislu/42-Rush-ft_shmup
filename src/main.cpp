@@ -140,9 +140,15 @@ void	print_game(game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
 		}
 		else if (bullet.type == ENEMY_BULLET) {
-			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+			/* if (bullet.source == BOSS)
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+			else */
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
-			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+			/* if (bullet.source == BOSS)
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+			else */
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 		}
 		else if (bullet.type == ENEMY_1_BULLET) {
 			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_CYAN), 0);
@@ -194,13 +200,14 @@ void	print_stuff()
 	//refresh();
 }
 
-void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type)
+void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type, int source)
 {
 	enemy->shoot_cooldown = get_current_time();
-	if (rand() % 2 == 0)
+	if (enemy->type != BOSS && rand() % 2 == 0)
 		return ;
 	entity bullet = {};
 	bullet.type = bullet_type;
+	bullet.source = source;
 	bullet.status = 1;
 	bullet.damage = 1;
 	bullet.speed = 1000;
@@ -273,9 +280,13 @@ void	update_entities(game *game)
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET
 			&& get_current_time() - game->bullets[i].move_cooldown > 20)
 			move_p_bullet(&game->bullets[i]);
-		else if (game->bullets[i].status == 1
+		else if (game->bullets[i].status == 1 && game->bullets[i].source != BOSS
 			&& (((game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == ENEMY_1_BULLET) && get_current_time() - game->bullets[i].move_cooldown > 100)
 				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
+			move_enemy_bullets(game, &game->bullets[i]);
+		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80)
+			|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 120)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
@@ -285,22 +296,28 @@ void	update_entities(game *game)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
-				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET);
+				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BASIC_ENEMY);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
-		if (game->enemies[i].status == 1 && game->enemies[i].type == BOSS
-			&& get_current_time() - game->enemies[i].move_cooldown > 200)
-				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
-				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_1_BULLET);
+				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_1_BULLET, ENEMY_1);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 2500)
-				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET);
+				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, ENEMY_2);
+		if (game->enemies[i].status == 1 && game->enemies[i].type == BOSS
+			&& get_current_time() - game->enemies[i].move_cooldown > 200)
+				move_enemy(&game->enemies[i]);
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
+				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, BOSS);
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 500)
+				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BOSS);
 	}
 }
 
@@ -349,15 +366,16 @@ void	spawn_enemy_2(game *game, int y, int x)
 	game->enemies.push_back(enemy);
 }
 
-void	spawn_boss(game *game, int y, int x)
+void	spawn_boss(game *game, int y, int x, int id)
 {
 	entity enemy = {};
 	enemy.status = 1;
+	enemy.id = id;
 	enemy.type = BOSS;
 	enemy.current_pos.y = y;
 	enemy.current_pos.x = x;
 	enemy.hp = 1;
-	game->boss_health = 1;
+	game->boss_health = 20;
 	game->boss_status = 1;
 	enemy.damage = 2;
 	enemy.shoot_cooldown = get_current_time() + rand() % 1000;
@@ -372,20 +390,20 @@ void	spawn_entities(game *game)
 	if (!(get_current_time() - game->enemy_spawn_cooldown > 4000))
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
-	if (game->score >= 50 && get_current_time() - game->spawn_boss_cooldown > 5000 && game->boss_status == 0)
+	if (game->score >= 50 && get_current_time() - game->spawn_boss_cooldown > 5000 && game->boss_status == 0) //change values
 	{
 		//game->boss_health 
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 6);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 6);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 6);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 6, 1);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 6, 2);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 6, 3);
 
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 5);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 5);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 5);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 5, 4);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 5, 5);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 5, 6);
 
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 4);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 4);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 4);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 4, 7);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 4, 8);
+		spawn_boss(game, MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 4, 9);
 
 	}
 	else if (game->boss_health == 0)
@@ -453,6 +471,7 @@ void	check_enemy_collision(game *game, entity *entity, int type)
 			else if (type == BOSS) {
 				game->boss_health--;
 				if (game->boss_health <= 0) {
+					game->score += 500;
 					game->spawn_boss_cooldown = get_current_time();
 					game->boss_status = 0;
 					kill_boss(game);
@@ -559,7 +578,7 @@ bool	game_loop()
 	srand(time(NULL));
 	//spawn_entities(game);
 	wclear(game->status_win);
-	game->score = 50;
+	//game->score = 50;
 	while (1)
 	{
 		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)

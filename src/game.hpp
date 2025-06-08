@@ -71,12 +71,14 @@ struct window
 
 struct entity
 {
+	int		id;
 	int		type;
 	bool	status;
 	int		hp;
 	int		speed;
 	int		damage;
 	int		direction; //for homing bullets
+	int		source; //to know from which enemies the bullets come from (needed for boss to adjust bullet speed)
 	long		invis_frames;
 	long		shoot_cooldown;
 	long		move_cooldown;
