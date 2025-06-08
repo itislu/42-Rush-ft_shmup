@@ -55,6 +55,7 @@ enum entity_type
 	ENEMY_1_BULLET,
 	HOMING_BULLET,
 	COLLIDABLE,
+	BOSS,
 };
 
 struct window
@@ -102,6 +103,9 @@ struct game
 	long	score;
 	long	time;
 	long	enemy_spawn_cooldown;
+	int		boss_health;
+	bool	boss_status;
+	long	spawn_boss_cooldown;
 	//entity	bullets[MAX_BULLETS];
 	/* window	game_win;
 	window	status_win;

@@ -155,6 +155,9 @@ void	print_game(game *game)
 		else if (enemy.type == ENEMY_1) {
 			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🗿");
 		}
+		else if (enemy.type == BOSS) {
+			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🟥");
+		}
 	}
 	for (auto& collidable : game->collidables) {
 		if (!collidable.status) {
@@ -266,6 +269,9 @@ void	update_entities(game *game)
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
 			&& get_current_time() - game->enemies[i].move_cooldown > 350)
 				move_enemy(&game->enemies[i]);
+		if (game->enemies[i].status == 1 && game->enemies[i].type == BOSS
+			&& get_current_time() - game->enemies[i].move_cooldown > 200)
+				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_1_BULLET);
@@ -323,29 +329,65 @@ void	spawn_enemy_2(game *game, int y, int x)
 	game->enemies.push_back(enemy);
 }
 
+void	spawn_boss(game *game, int y, int x)
+{
+	entity enemy = {};
+	enemy.status = 1;
+	enemy.type = BOSS;
+	enemy.current_pos.y = y;
+	enemy.current_pos.x = x;
+	enemy.hp = 1;
+	game->boss_health = 1;
+	game->boss_status = 1;
+	enemy.damage = 2;
+	enemy.shoot_cooldown = get_current_time() + rand() % 1000;
+	enemy.move_cooldown = get_current_time();
+	enemy.pattern = {UP, UP, UP, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP, UP, UP};
+	game->enemies.push_back(enemy);
+}
+
 void	spawn_entities(game *game)
 {
 	static int i = 1;
 	if (!(get_current_time() - game->enemy_spawn_cooldown > 4000))
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
-	for (int y = 0; y < MAX_MAP_HEIGHT - 1; y++)
+	if (game->score >= 50 && get_current_time() - game->spawn_boss_cooldown > 5000 && game->boss_status == 0)
 	{
-		if (i == 1 && rand() % 3 == 0)
-		{
-			if (rand() % 2 == 0)
-				spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
-			else
-				spawn_enemy_1(game, y, MAX_MAP_WIDTH - 1);
-			y++;
-		}
-		else if (i == -1 && rand() % 3 == 0)
-		{
-			spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
-			y++;
-		}
+		//game->boss_health 
+		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 6);
+		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 6);
+		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 6);
+
+		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 5);
+		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 5);
+		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 5);
+
+		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 4);
+		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 4);
+		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 4);
+
 	}
-	i *= -1;
+	else if (game->boss_health == 0)
+	{
+		for (int y = 0; y < MAX_MAP_HEIGHT - 1; y++)
+		{
+			if (i == 1 && rand() % 3 == 0)
+			{
+				if (rand() % 2 == 0)
+					spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
+				else
+					spawn_enemy_1(game, y, MAX_MAP_WIDTH - 1);
+				y++;
+			}
+			else if (i == -1 && rand() % 3 == 0)
+			{
+				spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
+				y++;
+			}
+		}
+		i *= -1;
+	}
 }
 
 void	check_bullet_collision(game *game, entity *entity, int type)
@@ -360,6 +402,16 @@ void	check_bullet_collision(game *game, entity *entity, int type)
 			game->bullets[i].status = false;
 			entity->status = false;
 		}
+	}
+}
+
+void kill_boss(game *game)
+{
+	for (size_t i = 0; i < game->enemies.size(); i++)
+	{
+		if (game->enemies[i].type == BOSS && game->boss_health <= 0) {
+					game->enemies[i].status = false;
+				}
 	}
 }
 
@@ -378,8 +430,17 @@ void	check_enemy_collision(game *game, entity *entity, int type)
 				game->score += ENEMY_2_POINTS;
 			else if (type == ENEMY_1)
 				game->score += ENEMY_1_POINTS;
-			game->enemies[i].status = false;
+			else if (type == BOSS) {
+				game->boss_health--;
+				if (game->boss_health <= 0) {
+					game->spawn_boss_cooldown = get_current_time();
+					game->boss_status = 0;
+					kill_boss(game);
+				}
+			}
 			entity->status = false;
+			if (type != BOSS)
+				game->enemies[i].status = false;
 			return ;
 		}
 	}
@@ -392,12 +453,13 @@ void	check_player_collision(game *game, entity *entity)
 		|| (game->player.current_pos == entity->previous_pos
 			&& game->player.previous_pos == entity->current_pos)))
 	{
-		if (get_current_time() - game->player.invis_frames > 1000 || entity->type == BASIC_ENEMY || entity->type == ENEMY_1 || entity->type == ENEMY_2)
+		if (get_current_time() - game->player.invis_frames > 1000 || entity->type == BASIC_ENEMY || entity->type == ENEMY_1 || entity->type == ENEMY_2 || entity->type == BOSS)
 		{
 				game->player.invis_frames = get_current_time();
 				game->player.hp--;
 		}
-		entity->status = false;
+		else if (entity->type != BOSS)
+			entity->status = false;
 		return ;
 	}
 }
@@ -414,8 +476,9 @@ void	check_collisions(game *game)
 			check_enemy_collision(game, &game->bullets[i], BASIC_ENEMY);
 			check_enemy_collision(game, &game->bullets[i], ENEMY_2);
 			check_enemy_collision(game, &game->bullets[i], ENEMY_1);
+			check_enemy_collision(game, &game->bullets[i], BOSS);
 		}
-		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET))
+		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET || game->bullets[i].type == ENEMY_1_BULLET))
 		{
 			check_player_collision(game, &game->bullets[i]);
 			//check_enemy_collision(game, &game->bullets[i], PLAYER);
@@ -424,34 +487,34 @@ void	check_collisions(game *game)
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
-		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2 || game->enemies[i].type == ENEMY_1))
+		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2 || game->enemies[i].type == ENEMY_1 || game->enemies[i].type == BOSS))
 			check_player_collision(game, &game->enemies[i]);
 	}
 }
 
-void	prune_inactive(game *game)
+void	prune_inactive(game *game_)
 {
-	game->bullets.erase(
-		std::remove_if(game->bullets.begin(), game->bullets.end(), 
+	game_->bullets.erase(
+		std::remove_if(game_->bullets.begin(), game_->bullets.end(), 
 			[](entity& object){ 
 				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=  MAX_MAP_HEIGHT || object.current_pos.x >= MAX_MAP_WIDTH)
 					return (true);
 				else
 					return (false);
 			}), 
-		game->bullets.end());
+		game_->bullets.end());
 
-	game->enemies.erase(
-		std::remove_if(game->enemies.begin(), game->enemies.end(), 
+	game_->enemies.erase(
+		std::remove_if(game_->enemies.begin(), game_->enemies.end(), 
 			[](entity& object){ 
 				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=  MAX_MAP_HEIGHT || object.current_pos.x >= MAX_MAP_WIDTH)
 					return (true);
 				else
 					return (false);
 			}), 
-		game->enemies.end());
+		game_->enemies.end());
 
-	game->background.prune();
+	game_->background.prune();
 }
 
 bool	check_terminal_size()
@@ -487,6 +550,7 @@ bool	game_loop()
 	srand(time(NULL));
 	//spawn_entities(game);
 	wclear(game->status_win);
+	game->score = 50;
 	while (1)
 	{
 		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)
