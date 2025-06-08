@@ -20,10 +20,10 @@ bool player::update(int input, game* game)
 	if (input == control_set[0] && current_pos.y != 0) {
 		current_pos.y--;
 	}
-	else if (input == control_set[2] && current_pos.y != MAX_MAP_HEIGHT - 1) {
+	else if (input == control_set[2] && current_pos.y != map_height - 1) {
 		current_pos.y++;
 	}
-	else if (input == control_set[3] && current_pos.x != MAX_MAP_WIDTH - 1) {
+	else if (input == control_set[3] && current_pos.x != map_width - 1) {
 		current_pos.x++;
 	}
 	else if (input == control_set[1] && current_pos.x != 0) {

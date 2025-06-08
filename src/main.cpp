@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <optional>
 
+int map_width;
+int map_height;
+
 game *get_game(void)
 {
 	static game game{};
@@ -42,8 +45,8 @@ WINDOW *create_win(int size_y, int size_x , int pos_y, int pox_x)
 void	init_win()
 {
 	game *game = get_game();
-	game->game_win = create_win(GAME_WINDOW_HEIGHT, GAME_WINDOW_WIDTH, GAME_WINDOW_Y, GAME_WINDOW_X);
-	game->status_win = create_win(STATUS_WINDOW_HEIGHT, STATUS_WINDOW_WIDTH, STATUS_WINDOW_Y, STATUS_WINDOW_X);
+	game->game_win = create_win(game->game_height, game->game_width, GAME_WINDOW_Y, GAME_WINDOW_X);
+	game->status_win = create_win(game->status_height, game->status_width, STATUS_WINDOW_Y, STATUS_WINDOW_X);
 	wrefresh(game->game_win);
 	wrefresh(game->status_win);
 }
@@ -66,9 +69,9 @@ int shared_players_hp(game *game)
 
 void	print_status(game *game)
 {
-	for (int j = 0; j < STATUS_WINDOW_HEIGHT; j++)
+	for (int j = 0; j < game->status_height; j++)
 	{
-		for (int k = 0; k < STATUS_WINDOW_WIDTH; k++)
+		for (int k = 0; k < game->status_width; k++)
 		{
 			mvwprintw(game->status_win, j, k, " ");
 		}
@@ -77,12 +80,12 @@ void	print_status(game *game)
 	const int shared_hp = shared_players_hp(game);
 	for (int i = 0; i < shared_hp; i++)
 	{
-		mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH / 2 - 4 + i * 3, L"❤️");
+		mvwaddwstr(game->status_win, 1, game->status_width / 2 - 4 + i * 3, L"❤️");
 	}
 	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
 	mvwprintw(game->status_win, 1, 4, " Time: %ld", get_current_time_in_seconds() - game->time);
-	mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH - 16, L"🏆");
-	mvwprintw(game->status_win, 1, STATUS_WINDOW_WIDTH - 14, " Score: %ld", game->score);
+	mvwaddwstr(game->status_win, 1, game->status_width - 16, L"🏆");
+	mvwprintw(game->status_win, 1, game->status_width - 14, " Score: %ld", game->score);
 	wrefresh(game->status_win);
 }
 
@@ -118,9 +121,9 @@ bool	is_enemy(game *game, int y, int x, int type)
 void	print_game(game *game)
 {
 	// Clear window
-	for (int y = 0; y < GAME_WINDOW_HEIGHT; y++)
+	for (int y = 0; y < game->game_height; y++)
 	{
-		for(int x = 0; x < GAME_WINDOW_WIDTH; x++)
+		for(int x = 0; x < game->game_width; x++)
 		{
 			mvwaddwstr(game->game_win, y, x, L" ");
 		}
@@ -375,34 +378,34 @@ void	spawn_entities(game *game)
 	if (game->score >= 50 && get_current_time() - game->spawn_boss_cooldown > 5000 && game->boss_status == 0)
 	{
 		//game->boss_health 
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 6);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 6);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 6);
+		spawn_boss(game, map_height / 2 + 1, map_width - 6);
+		spawn_boss(game, map_height / 2, map_width - 6);
+		spawn_boss(game, map_height / 2 - 1, map_width - 6);
 
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 5);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 5);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 5);
+		spawn_boss(game, map_height / 2 + 1, map_width - 5);
+		spawn_boss(game, map_height / 2, map_width - 5);
+		spawn_boss(game, map_height / 2 - 1, map_width - 5);
 
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 + 1, MAX_MAP_WIDTH - 4);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2, MAX_MAP_WIDTH - 4);
-		spawn_boss(game,MAX_MAP_HEIGHT / 2 - 1, MAX_MAP_WIDTH - 4);
+		spawn_boss(game, map_height / 2 + 1, map_width - 4);
+		spawn_boss(game, map_height / 2, map_width - 4);
+		spawn_boss(game, map_height / 2 - 1, map_width - 4);
 
 	}
 	else if (game->boss_health == 0)
 	{
-		for (int y = 0; y < MAX_MAP_HEIGHT - 1; y++)
+		for (int y = 0; y <  map_height - 1; y++)
 		{
 			if (i == 1 && rand() % 3 == 0)
 			{
 				if (rand() % 2 == 0)
-					spawn_basic_enemy(game, y, MAX_MAP_WIDTH - 1);
+					spawn_basic_enemy(game, y, map_width - 1);
 				else
-					spawn_enemy_1(game, y, MAX_MAP_WIDTH - 1);
+					spawn_enemy_1(game, y, map_width - 1);
 				y++;
 			}
 			else if (i == -1 && rand() % 3 == 0)
 			{
-				spawn_enemy_2(game, y, MAX_MAP_WIDTH - 1);
+				spawn_enemy_2(game, y, map_width - 1);
 				y++;
 			}
 		}
@@ -506,7 +509,7 @@ void	prune_inactive(game *game_)
 	game_->bullets.erase(
 		std::remove_if(game_->bullets.begin(), game_->bullets.end(), 
 			[](entity& object){ 
-				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=  MAX_MAP_HEIGHT || object.current_pos.x >= MAX_MAP_WIDTH)
+				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=   map_height || object.current_pos.x >= map_width)
 					return (true);
 				else
 					return (false);
@@ -516,7 +519,7 @@ void	prune_inactive(game *game_)
 	game_->enemies.erase(
 		std::remove_if(game_->enemies.begin(), game_->enemies.end(), 
 			[](entity& object){ 
-				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=  MAX_MAP_HEIGHT || object.current_pos.x >= MAX_MAP_WIDTH)
+				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=   map_height || object.current_pos.x >= map_width)
 					return (true);
 				else
 					return (false);
@@ -528,15 +531,16 @@ void	prune_inactive(game *game_)
 
 bool	check_terminal_size()
 {
+	game *game = get_game();
 	int y;
 	int x;
 
 	getmaxyx(stdscr, y, x);
-	while (y < GAME_WINDOW_HEIGHT + STATUS_WINDOW_HEIGHT || x < GAME_WINDOW_WIDTH)
+	while (y < game->term_height || x < game->term_width)
 	{
 		clear();
 		mvprintw(0, 0, "TERMINAL TOO SMALL");
-		mvprintw(1, 0, "  minimum: %dx%d", GAME_WINDOW_HEIGHT + STATUS_WINDOW_HEIGHT, GAME_WINDOW_WIDTH);
+		mvprintw(1, 0, "  minimum: %dx%d", game->term_height, game->term_width);
 		mvprintw(2, 0, "  current: %dx%d", y, x);
 		nodelay(stdscr, FALSE);
 		int input = tolower(getch());
@@ -611,7 +615,7 @@ bool	game_loop()
 void	init_players(int amount)
 {
 	game *game = get_game();
-	coordinate start = {(MAX_MAP_WIDTH / 2) - 3, MAX_MAP_HEIGHT / 2};
+	coordinate start = {(map_width / 2) - 3,  map_height / 2};
 	const int spacing = 4;
 
 	start.y -= (spacing / 2) * (amount - 1);
@@ -622,10 +626,22 @@ void	init_players(int amount)
 	}
 }
 
+void set_map_size()
+{
+	int term_height;
+	int term_width;
+	getmaxyx(stdscr, term_height, term_width);
+
+    map_height = term_height - STATUS_WINDOW_HEIGHT - 2;
+    map_width = (term_width / 2) - 2;
+    // map_width += map_width % 2;
+}
+
 int main()
 {
 	if (!init_ncurses())
 		return (1);
+	set_map_size();
 	init_win();
 	init_players(2);
 	refresh();
