@@ -714,10 +714,9 @@ int main()
 try {
 	if (!init_ncurses())
 		return (1);
-	set_map_size();
-	
-	init_win();
 	int i = menu();
+	set_map_size();
+	init_win();
 	if (i != -1)
 	{
 		init_players(i);
