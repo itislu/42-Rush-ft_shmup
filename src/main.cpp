@@ -1,5 +1,8 @@
 #include "game.hpp"
 #include <algorithm>
+#include <climits>
+#include <cstdlib>
+#include <optional>
 
 game *get_game(void)
 {
@@ -52,6 +55,15 @@ void delete_win()
 	delwin(game->status_win);
 }
 
+int shared_players_hp(game *game)
+{
+	int shared_hp = 0;
+	for (auto& player : game->players) {
+		shared_hp += player.hp;
+	}
+	return shared_hp;
+}
+
 void	print_status(game *game)
 {
 	for (int j = 0; j < STATUS_WINDOW_HEIGHT; j++)
@@ -62,9 +74,10 @@ void	print_status(game *game)
 		}
 	}
 	box(game->status_win, 0, 0);
-	for (int i = 0; i < game->player.hp; i++)
+	const int shared_hp = shared_players_hp(game);
+	for (int i = 0; i < shared_hp; i++)
 	{
-		mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH / 2 - 4+ i * 3, L"❤️");
+		mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH / 2 - 4 + i * 3, L"❤️");
 	}
 	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
 	mvwprintw(game->status_win, 1, 4, " Time: %ld", get_current_time_in_seconds() - game->time);
@@ -164,7 +177,9 @@ void	print_game(game *game)
 			continue;
 		}
 	}
-	mvwaddwstr(game->game_win, game->player.current_pos.y + 1, game->player.current_pos.x * 2 + 2, L"🛸");
+	for (auto& player : game->players) {
+		player.print(game->game_win);
+	}
 
 	box(game->game_win, 0, 0);
 	wrefresh(game->game_win);
@@ -177,23 +192,6 @@ void	print_stuff()
 	print_game(game);
 	print_status(game);
 	//refresh();
-}
-
-void	spawn_player_bullet(game *game)
-{
-	if (get_current_time() - game->player.shoot_cooldown > 200)
-	{
-		game->player.shoot_cooldown = get_current_time();
-
-		entity bullet = {};
-		bullet.type = PLAYER_BULLET;
-		bullet.status = 1;
-		bullet.damage = 1;
-		bullet.speed = 1000;
-		bullet.current_pos.y = game->player.current_pos.y;
-		bullet.current_pos.x = game->player.current_pos.x;
-		game->bullets.push_back(bullet);
-	}
 }
 
 void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type)
@@ -218,16 +216,38 @@ void	move_p_bullet(entity *bullet)
 	bullet->current_pos.x++;
 }
 
+std::optional<player *> find_nearest_player_in_x(game *game, entity *entity)
+{
+	int min_distance_y = INT_MAX;
+	std::optional<player *> nearest_player = std::nullopt;
+
+	for (auto& player : game->players) {
+		if (player.current_pos.x != entity->current_pos.x) {
+			continue;
+		}
+		const int distance_y = std::abs(player.current_pos.y - entity->current_pos.y);
+		if (!nearest_player || distance_y < min_distance_y) {
+			min_distance_y = distance_y;
+			nearest_player = &player;
+		}
+	}
+	return nearest_player;
+}
+
 void	move_enemy_bullets(game *game, entity *bullet)
 {
 	bullet->move_cooldown = get_current_time();
 	bullet->previous_pos = bullet->current_pos;
-	if (bullet->type == HOMING_BULLET && bullet->direction == 0 && game->player.current_pos.y != bullet->current_pos.y && game->player.current_pos.x == bullet->current_pos.x)
+	if (bullet->type == HOMING_BULLET && bullet->direction == 0)
 	{
-		if (game->player.current_pos.y < bullet->current_pos.y)
-			bullet->direction = -1;
-		else
-			bullet->direction = 1;
+		auto nearest_player = find_nearest_player_in_x(game, bullet);
+		if (nearest_player && (*nearest_player)->current_pos.y != bullet->current_pos.y) 
+		{
+			if ((*nearest_player)->current_pos.y < bullet->current_pos.y)
+				bullet->direction = -1;
+			else
+				bullet->direction = 1;
+		}
 	}
 	if (bullet->type == HOMING_BULLET && bullet->direction != 0)
 		bullet->current_pos.y += bullet->direction;
@@ -446,24 +466,6 @@ void	check_enemy_collision(game *game, entity *entity, int type)
 	}
 }
 
-void	check_player_collision(game *game, entity *entity)
-{
-	if (game->player.status == 1
-		&& ((game->player.current_pos == entity->current_pos)
-		|| (game->player.current_pos == entity->previous_pos
-			&& game->player.previous_pos == entity->current_pos)))
-	{
-		if (get_current_time() - game->player.invis_frames > 1000 || entity->type == BASIC_ENEMY || entity->type == ENEMY_1 || entity->type == ENEMY_2 || entity->type == BOSS)
-		{
-				game->player.invis_frames = get_current_time();
-				game->player.hp--;
-		}
-		else if (entity->type != BOSS)
-			entity->status = false;
-		return ;
-	}
-}
-
 void	check_collisions(game *game)
 {
 	for (size_t i = 0; i < game->bullets.size(); i++)
@@ -480,15 +482,22 @@ void	check_collisions(game *game)
 		}
 		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET || game->bullets[i].type == ENEMY_1_BULLET))
 		{
-			check_player_collision(game, &game->bullets[i]);
-			//check_enemy_collision(game, &game->bullets[i], PLAYER);
+			for (auto& player : game->players) {
+				player.on_collision(&game->bullets[i]);
+			}
 		}
 		
 	}
-	for (size_t i = 0; i < game->enemies.size(); i++)
-	{
-		if (game->enemies[i].status == 1 && (game->enemies[i].type == BASIC_ENEMY || game->enemies[i].type == ENEMY_2 || game->enemies[i].type == ENEMY_1 || game->enemies[i].type == BOSS))
-			check_player_collision(game, &game->enemies[i]);
+	for (size_t i = 0; i < game->enemies.size(); i++) {
+		if (game->enemies[i].status == 1
+		    && (game->enemies[i].type == BASIC_ENEMY
+		        || game->enemies[i].type == ENEMY_2
+		        || game->enemies[i].type == ENEMY_1 
+				|| game->enemies[i].type == BOSS)) {
+			for (auto& player : game->players) {
+				player.on_collision(&game->enemies[i]);
+			}
+		}
 	}
 }
 
@@ -564,26 +573,26 @@ bool	game_loop()
 				if (!check_terminal_size())
 				 return (true);
 			}
-			else if (input == 'w' && game->player.current_pos.y != 0)
-				game->player.current_pos.y--;
-			else if (input == 's' && game->player.current_pos.y != MAX_MAP_HEIGHT - 1)
-				game->player.current_pos.y++;
-			else if (input == 'd' && game->player.current_pos.x != MAX_MAP_WIDTH - 1)
-				game->player.current_pos.x++;
-			else if (input == 'a' && game->player.current_pos.x != 0)
-				game->player.current_pos.x--;
-			else if (input == KEY_SPACE)
-				spawn_player_bullet(game);
+			else 
+			{
+				for (auto& player : game->players) {
+					if (player.update(input, game)) {
+						break;
+					}
+				}
+			}
 			update_entities(game);
 			check_collisions(game);
 			prune_inactive(game);
 			spawn_entities(game);
 			game->background.update();
-			if (game->player.hp <= 0)
+			if (shared_players_hp(game) <= 0)
 			{
 				nodelay(stdscr, FALSE);
 				print_stuff();
-				mvwaddwstr(game->game_win, game->player.current_pos.y + 1, (game->player.current_pos.x * 2) + 2, L"💥");
+				for (auto& player : game->players) {
+					mvwaddwstr(game->game_win, player.current_pos.y + 1, (player.current_pos.x * 2) + 2, L"💥");
+				}
 				wrefresh(game->game_win);
 				input = tolower(getch());
 				while (input != 'q' && input != KEY_ESCAPE)
@@ -599,22 +608,26 @@ bool	game_loop()
 	return (true);
 }
 
-void	init_player()
+void	init_players(int amount)
 {
 	game *game = get_game();
+	coordinate start = {(MAX_MAP_WIDTH / 2) - 3, MAX_MAP_HEIGHT / 2};
+	const int spacing = 4;
 
-	game->player.status = 1;
-	game->player.current_pos.y = MAX_MAP_HEIGHT / 2;
-	game->player.current_pos.x = (MAX_MAP_WIDTH / 2) - 3;
-	game->player.hp = 3;
+	start.y -= (spacing / 2) * (amount - 1);
 
+	for (int i = 0; i < amount; ++i) {
+		game->players.emplace_back(start);
+		start.y += spacing;
+	}
 }
+
 int main()
 {
 	if (!init_ncurses())
 		return (1);
 	init_win();
-	init_player();
+	init_players(2);
 	refresh();
 	print_stuff();
 	game_loop();

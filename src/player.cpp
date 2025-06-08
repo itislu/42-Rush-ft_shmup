@@ -1,0 +1,79 @@
+#include "game.hpp"
+#include "time.hpp"
+#include <ncurses.h>
+
+int player::created_players = 0;
+
+player::player(coordinate position)
+    : entity(),
+      appearance(appearances.at(created_players)),
+      control_set{controls_sets.at(created_players)}
+{
+	current_pos = position;
+	status = true;
+	hp = 3;
+	++created_players;
+}
+
+bool player::update(int input, game* game)
+{
+	if (input == control_set[0] && current_pos.y != 0) {
+		current_pos.y--;
+	}
+	else if (input == control_set[2] && current_pos.y != MAX_MAP_HEIGHT - 1) {
+		current_pos.y++;
+	}
+	else if (input == control_set[3] && current_pos.x != MAX_MAP_WIDTH - 1) {
+		current_pos.x++;
+	}
+	else if (input == control_set[1] && current_pos.x != 0) {
+		current_pos.x--;
+	}
+	else if (input == control_set[4]) {
+		shoot(game);
+	}
+	else {
+		return false;
+	}
+	return true;
+}
+
+void player::shoot(game* game)
+{
+	if (get_current_time() - shoot_cooldown > 200) {
+		shoot_cooldown = get_current_time();
+
+		entity bullet = {};
+		bullet.type = PLAYER_BULLET;
+		bullet.status = true;
+		bullet.damage = 1;
+		bullet.speed = 1000;
+		bullet.current_pos = current_pos;
+		game->bullets.push_back(bullet);
+	}
+}
+
+bool player::on_collision(entity* entity)
+{
+	if (status == false
+	    || !((current_pos == entity->current_pos)
+	         || (current_pos == entity->previous_pos
+	             && previous_pos == entity->current_pos))) {
+		return false;
+	}
+	if (get_current_time() - invis_frames > 1000 || entity->type == BASIC_ENEMY
+	    || entity->type == ENEMY_1 || entity->type == ENEMY_2
+	    || entity->type == BOSS) {
+		invis_frames = get_current_time();
+		hp--;
+	}
+	else if (entity->type != BOSS) {
+		entity->status = false;
+	}
+	return true;
+}
+
+void player::print(WINDOW* game_win)
+{
+	mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+}
