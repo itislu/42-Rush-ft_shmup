@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libft/libft.h"
+#include "coordinate.hpp"
 #include "time.hpp"
 #include <ncurses.h>
 #include <sys/time.h>
@@ -58,15 +59,6 @@ struct window
 	int		width;
 	int		pos_y;
 	int		pos_x;
-};
-
-struct coordinate {
-	int x;
-	int y;
-
-	bool operator==(const coordinate& other) {
-		return x == other.x && y == other.y;
-	}
 };
 
 struct entity
