@@ -105,42 +105,46 @@ bool	is_enemy(game *game, int y, int x, int type)
 
 void	print_game(game *game)
 {
-	//box(game->game_win, 0, 0);
-	//wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-	for (int y = 0; y < MAX_MAP_HEIGHT; y++)
+	// Clear window
+	for (int y = 0; y < GAME_WINDOW_HEIGHT; y++)
 	{
-		wmove(game->game_win, y + 1, 2);
-		for(int x = 0; x < MAX_MAP_WIDTH; x++)
+		for(int x = 0; x < GAME_WINDOW_WIDTH; x++)
 		{
-			
-			if (game->player.current_pos.y == y && game->player.current_pos.x == x)
-			{
-				//wattr_on(game->game_win, A_REVERSE, 0);
-				waddwstr(game->game_win, L"🛸");
-				//wattr_off(game->game_win, A_REVERSE, 0);
-			}
-			else if (is_bullet(game, y, x, PLAYER_BULLET))
-			{
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
-				waddwstr(game->game_win, L"➤");
-				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
-			}
-			else if (is_enemy(game, y, x, BASIC_ENEMY))
-				waddwstr(game->game_win, L"👾");
-			else if (is_bullet(game, y, x, ENEMY_BULLET))
-			{
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-				waddwstr(game->game_win, L"•");
-				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-			}
-			else
-				waddwstr(game->game_win, L"˖");//wprintw(game->game_win, ".");..
-			if (!is_enemy(game, y, x, BASIC_ENEMY) && !(game->player.current_pos.y == y && game->player.current_pos.x == x) && x != MAX_MAP_WIDTH - 1)
-				wprintw(game->game_win, " ");
+			mvwaddwstr(game->game_win, y, x, L" ");
 		}
 	}
-	//wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-	//box(game->game_win, 0, 0);
+
+	for (auto& enemy : game->enemies) {
+		if (!enemy.status) {
+			continue;
+		}
+		if (enemy.type == BASIC_ENEMY) {
+			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👾");
+		}
+	}
+	for (auto& bullet : game->bullets) {
+		if (!bullet.status) {
+			continue;
+		}
+		if (bullet.type == PLAYER_BULLET) {
+			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
+			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
+			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
+		}
+		else if (bullet.type == ENEMY_BULLET) {
+			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
+			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
+		}
+	}
+	for (auto& collidable : game->collidables) {
+		if (!collidable.status) {
+			continue;
+		}
+	}
+	mvwaddwstr(game->game_win, game->player.current_pos.y + 1, game->player.current_pos.x * 2 + 2, L"🛸");
+
+	box(game->game_win, 0, 0);
 	wrefresh(game->game_win);
 }
 
