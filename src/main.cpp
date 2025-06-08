@@ -45,8 +45,23 @@ void	init_win()
 void	print_status(game *game)
 {
 	//wclear(game->status_win);
+	for (int j = 0; j < STATUS_WINDOW_HEIGHT; j++)
+	{
+		for (int k = 0; k < STATUS_WINDOW_WIDTH; k++)
+		{
+			mvwprintw(game->status_win, j, k, " ");
+		}
+	}
 	box(game->status_win, 0, 0);
-	mvwprintw(game->status_win, 1, 2, " Time: %-30ld Lives: %d Score: %ld",get_current_time_in_seconds() - game->time, game->player.hp, game->score);
+	//mvwprintw(game->status_win, 1, 2, " Time: %-30ld Lives: %d Score: %ld",get_current_time_in_seconds() - game->time, game->player.hp, game->score);
+	for (int i = 0; i < game->player.hp; i++)
+	{
+		mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH / 2 - 4+ i * 3, L"❤️");
+	}
+	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
+	mvwprintw(game->status_win, 1, 4, " Time: %ld", get_current_time_in_seconds() - game->time);
+	mvwaddwstr(game->status_win, 1, STATUS_WINDOW_WIDTH - 16, L"🏆");
+	mvwprintw(game->status_win, 1, STATUS_WINDOW_WIDTH - 14, " Score: %ld", game->score + 9000);
 	wrefresh(game->status_win);
 }
 
