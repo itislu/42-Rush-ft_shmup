@@ -72,6 +72,8 @@ bool player::on_collision(entity* entity)
 	    || entity->type == BOSS) {
 		invis_frames = get_current_time();
 		hp--;
+		if (entity->type != BOSS)
+			entity->status = false;
 	}
 	else if (entity->type != BOSS) {
 		entity->status = false;

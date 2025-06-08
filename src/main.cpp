@@ -383,7 +383,7 @@ void	spawn_boss(game *game, int y, int x, int id)
 	enemy.current_pos.y = y;
 	enemy.current_pos.x = x;
 	enemy.hp = 1;
-	game->boss_health = 20;
+	game->boss_health = 9;
 	game->boss_status = 1;
 	enemy.damage = 2;
 	enemy.shoot_cooldown = get_current_time() + rand() % 1000;
@@ -398,7 +398,7 @@ void	spawn_entities(game *game)
 	if (!(get_current_time() - game->enemy_spawn_cooldown > 4000))
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
-	if (game->score >= 50 && get_current_time() - game->spawn_boss_cooldown > 5000 && game->boss_status == 0) //change values
+	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 20000 && game->boss_status == 0) //change values
 	{
 		//game->boss_health 
 		spawn_boss(game,  map_height / 2 + 1, map_width - 6, 1);
@@ -587,7 +587,7 @@ bool	game_loop()
 	srand(time(NULL));
 	//spawn_entities(game);
 	wclear(game->status_win);
-	//game->score = 50;
+	game->score = 0;
 	while (1)
 	{
 		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)
@@ -661,11 +661,24 @@ void set_map_size()
     // map_width += map_width % 2;
 }
 
+/* int	menu()
+{
+	game *game = get_game();
+	while (1)
+	{
+		int input = tolower(getch());
+		if (input == 'q' || input == KEY_ESCAPE)
+			return -1;
+		if ()
+	}
+} */
+
 int main()
 {
 	if (!init_ncurses())
 		return (1);
 	set_map_size();
+	
 	init_win();
 	init_players(2);
 	refresh();
