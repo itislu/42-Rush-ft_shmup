@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libft/libft.h"
+#include "time.hpp"
 #include <ncurses.h>
 #include <sys/time.h>
 #include <time.h>
