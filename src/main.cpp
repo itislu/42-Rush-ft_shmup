@@ -1,7 +1,10 @@
 #include "game.hpp"
+#include "libftpp/format.hpp"
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
+#include <exception>
+#include <iostream>
 #include <optional>
 #include <sys/types.h>
 
@@ -708,7 +711,7 @@ int	menu()
 }
 
 int main()
-{
+try {
 	if (!init_ncurses())
 		return (1);
 	set_map_size();
@@ -731,4 +734,6 @@ int main()
 	// spawn enemies
 	//
 	// game over check
+} catch (std::exception& e) {
+	std::cerr << ft::log::error(e.what()) << '\n';
 }
