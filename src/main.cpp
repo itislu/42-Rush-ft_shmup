@@ -90,7 +90,8 @@ void	print_status(Game *game)
 		mvwaddwstr(game->status_win, 1, game->status_width / 2 - 9 + i * 3, L"❤️");
 	}
 	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
-	mvwprintw(game->status_win, 1, 4, " Time: %ld", get_current_time_in_seconds() - game->time);
+	mvwprintw(game->status_win, 1, 4, " Time: %ld", 
+		(shared_hp > 0 ? get_current_time_in_seconds() : game->gameover_time) - game->start_time);
 	mvwaddwstr(game->status_win, 1, game->status_width - 16, L"🏆");
 	mvwprintw(game->status_win, 1, game->status_width - 14, " Score: %ld", game->score);
 	wrefresh(game->status_win);
@@ -600,7 +601,7 @@ bool	game_loop()
 {
 	Game *game = get_game();
 	long	time_reference = get_current_time();
-	game->time = get_current_time_in_seconds();
+	game->start_time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
 	srand(time(NULL));
 	//spawn_entities(game);
@@ -634,16 +635,12 @@ bool	game_loop()
 			game->background.update();
 			if (shared_players_hp(game) <= 0)
 			{
-				//nodelay(stdscr, FALSE);
-				// print_stuff();
 				for (auto& player : game->players) {
 					mvwaddwstr(game->game_win, player.current_pos.y + 1, (player.current_pos.x * 2) + 2, L"💥");
 				}
-				// wrefresh(game->game_win);
-				// input = tolower(getch());
-				// while (input != 'q' && input != KEY_ESCAPE)
-				// 	input = tolower(getch());
-				// break ;
+				if (game->gameover_time == 0) {
+					game->gameover_time = get_current_time_in_seconds();
+				}
 			}
 			print_stuff();
 		}
@@ -731,12 +728,8 @@ try {
 	delete_win();
 	endwin();
 	return (0);
-	// print
-	// input
-	// update entities
-	// spawn enemies
-	//
-	// game over check
-} catch (std::exception& e) {
+} 
+catch (std::exception& e) {
 	std::cerr << ft::log::error(e.what()) << '\n';
+	return (1);
 }

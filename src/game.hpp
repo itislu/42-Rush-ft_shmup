@@ -138,7 +138,8 @@ struct Game
 	int		status_width;
 	std::vector<Player> players;
 	long	score;
-	long	time;
+	long	start_time;
+	long	gameover_time;
 	long	enemy_spawn_cooldown;
 	int		boss_health;
 	bool	boss_status;
