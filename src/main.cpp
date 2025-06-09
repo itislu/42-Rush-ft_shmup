@@ -728,12 +728,8 @@ try {
 	delete_win();
 	endwin();
 	return (0);
-	// print
-	// input
-	// update entities
-	// spawn enemies
-	//
-	// game over check
-} catch (std::exception& e) {
+} 
+catch (std::exception& e) {
 	std::cerr << ft::log::error(e.what()) << '\n';
+	return (1);
 }
