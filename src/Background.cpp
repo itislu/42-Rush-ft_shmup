@@ -1,11 +1,11 @@
-#include "background.hpp"
+#include "Background.hpp"
 #include "game.hpp"
 #include "time.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <ncurses.h>
 
-background::background()
+Background::Background()
     : spawn_cooldown(0),
       move_cooldown(0)
 {
@@ -14,7 +14,7 @@ background::background()
 	}
 }
 
-void background::update()
+void Background::update()
 {
 	// Spawn
 	if (get_current_time() - spawn_cooldown > 100) {
@@ -33,9 +33,9 @@ void background::update()
 	}
 }
 
-void background::spawn(int x)
+void Background::spawn(int x)
 {
-	background_entity bg = {};
+	BackgroundEntity bg = {};
 	bg.pattern = {{-1, 0}};
 	bg.current_pos.x = x;
 	bg.current_pos.y = rand() % map_height;
@@ -44,7 +44,7 @@ void background::spawn(int x)
 	entities.push_back(bg);
 }
 
-void background::print(WINDOW* game_win)
+void Background::print(WINDOW* game_win)
 {
 	for (auto& bg : entities) {
 		mvwaddwstr(
@@ -52,11 +52,11 @@ void background::print(WINDOW* game_win)
 	}
 }
 
-void background::prune()
+void Background::prune()
 {
 	entities.erase(std::remove_if(entities.begin(),
 	                              entities.end(),
-	                              [](background_entity& bg) {
+	                              [](BackgroundEntity& bg) {
 		                              return bg.current_pos.x < 0;
 	                              }),
 	               entities.end());

@@ -1,32 +1,32 @@
 #pragma once
 
-struct coordinate {
+struct Coordinate {
 	int x;
 	int y;
 
-	bool operator==(const coordinate& other)
+	bool operator==(const Coordinate& other)
 	{
 		return x == other.x && y == other.y;
 	}
 
-	coordinate operator+(const coordinate& other) const
+	Coordinate operator+(const Coordinate& other) const
 	{
 		return {x + other.x, y + other.y};
 	}
 
-	coordinate operator-(const coordinate& other) const
+	Coordinate operator-(const Coordinate& other) const
 	{
 		return {x - other.x, y - other.y};
 	}
 
-	coordinate& operator+=(const coordinate& other)
+	Coordinate& operator+=(const Coordinate& other)
 	{
 		x += other.x;
 		y += other.y;
 		return *this;
 	}
 
-	coordinate& operator-=(const coordinate& other)
+	Coordinate& operator-=(const Coordinate& other)
 	{
 		x -= other.x;
 		y -= other.y;

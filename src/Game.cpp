@@ -1,7 +1,7 @@
 #include "game.hpp"
 #include <ncurses.h>
 
-game::game()
+Game::Game()
 {
 	getmaxyx(stdscr, term_height, term_width);
 
