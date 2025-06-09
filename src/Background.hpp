@@ -1,27 +1,27 @@
 #pragma once
 
-#include "coordinate.hpp"
+#include "Coordinate.hpp"
 #include <cstddef>
 #include <ncurses.h>
 #include <vector>
 
-struct background_entity 
+struct BackgroundEntity 
 {
 	const wchar_t* ch;
-	coordinate current_pos;
-	std::vector<coordinate> pattern;
+	Coordinate current_pos;
+	std::vector<Coordinate> pattern;
 	size_t pattern_idx;
 };
 
-struct background 
+struct Background 
 {
-	background();
+	Background();
 	void update();
 	void spawn(int x);
 	void print(WINDOW* game_win);
     void prune();
 
-	std::vector<background_entity> entities;
+	std::vector<BackgroundEntity> entities;
 	std::vector<const wchar_t*> charset = {L"𖥔", L"✦", L"˖", L".", L" ݁ "};
 	long spawn_cooldown;
 	long move_cooldown;

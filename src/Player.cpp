@@ -2,10 +2,10 @@
 #include "time.hpp"
 #include <ncurses.h>
 
-int player::created_players = 0;
+int Player::created_players = 0;
 
-player::player(coordinate position)
-    : entity(),
+Player::Player(Coordinate position)
+    : Entity(),
       appearance(appearances.at(created_players)),
       control_set{controls_sets.at(created_players)}
 {
@@ -15,7 +15,7 @@ player::player(coordinate position)
 	++created_players;
 }
 
-bool player::update(int input, game* game)
+bool Player::update(int input, Game* game)
 {
 	if (!status) {
 		return false;
@@ -41,7 +41,7 @@ bool player::update(int input, game* game)
 	return true;
 }
 
-void player::shoot(game* game)
+void Player::shoot(Game* game)
 {
 	if (!status) {
 		return;
@@ -49,7 +49,7 @@ void player::shoot(game* game)
 	if (get_current_time() - shoot_cooldown > 200) {
 		shoot_cooldown = get_current_time();
 
-		entity bullet = {};
+		Entity bullet = {};
 		bullet.type = PLAYER_BULLET;
 		bullet.status = true;
 		bullet.damage = 1;
@@ -59,7 +59,7 @@ void player::shoot(game* game)
 	}
 }
 
-bool player::on_collision(entity* entity)
+bool Player::on_collision(Entity* entity)
 {
 	if (status == false
 	    || !((current_pos == entity->current_pos)
@@ -84,7 +84,7 @@ bool player::on_collision(entity* entity)
 	return true;
 }
 
-void player::print(WINDOW* game_win)
+void Player::print(WINDOW* game_win)
 {
 	if (status) {
 		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);

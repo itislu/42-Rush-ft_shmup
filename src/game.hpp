@@ -1,7 +1,7 @@
 #pragma once
 
-#include "background.hpp"
-#include "coordinate.hpp"
+#include "Background.hpp"
+#include "Coordinate.hpp"
 #include <array>
 #include <ncurses.h>
 #include <stdlib.h>
@@ -53,7 +53,7 @@ inline const wchar_t  *game_over[] = {
 	L"                                        "
 };
 
-enum entity_type
+enum EntityType
 {
 	PLAYER,
 	BASIC_ENEMY,
@@ -67,9 +67,9 @@ enum entity_type
 	BOSS,
 };
 
-struct game;
+struct Game;
 
-struct window
+struct Window
 {
 	WINDOW	*win;
 	int		height;
@@ -78,7 +78,7 @@ struct window
 	int		pos_x;
 };
 
-struct entity
+struct Entity
 {
 	int		id;
 	int		type;
@@ -92,13 +92,13 @@ struct entity
 	long		shoot_cooldown;
 	long		move_cooldown;
 	//long		spawn_cooldown;
-	std::vector<coordinate>	pattern;
+	std::vector<Coordinate>	pattern;
 	size_t		pattern_idx;
-	coordinate	previous_pos;
-	coordinate	current_pos;
+	Coordinate	previous_pos;
+	Coordinate	current_pos;
 };
 
-struct player : public entity 
+struct Player : public Entity 
 {
 	constexpr static int max_players = 2;
 	constexpr static std::array<std::array<int, 5>, max_players> controls_sets = 
@@ -109,24 +109,24 @@ struct player : public entity
 		  {L"🚀"}}};
 	static int created_players;
 
-	player(coordinate position);
-	bool update(int input, game *game);
-	void shoot(game *game);
-	bool on_collision(entity *entity);
+	Player(Coordinate position);
+	bool update(int input, Game *game);
+	void shoot(Game *game);
+	bool on_collision(Entity *entity);
 	void print(WINDOW *game_win);
 	
 	const wchar_t *appearance;
 	std::array<int, 5> control_set;
 };
 
-// struct enemy : public entity
+// struct enemy : public Entity
 // {
 
 // };
 
-struct game
+struct Game
 {
-	game();
+	Game();
 
 	WINDOW	*game_win;
 	WINDOW	*status_win;
@@ -136,25 +136,25 @@ struct game
 	int		game_width;
 	int		status_height;
 	int		status_width;
-	std::vector<player> players;
+	std::vector<Player> players;
 	long	score;
 	long	time;
 	long	enemy_spawn_cooldown;
 	int		boss_health;
 	bool	boss_status;
 	long	spawn_boss_cooldown;
-	//entity	bullets[MAX_BULLETS];
-	/* window	game_win;
-	window	status_win;
-	entity	player;*/
-	std::vector<entity>	enemies;
-	std::vector<entity>	bullets;
-	std::vector<entity>	collidables;
-	background	background;
+	//Entity	bullets[MAX_BULLETS];
+	/* Window	game_win;
+	Window	status_win;
+	Entity	player;*/
+	std::vector<Entity>	enemies;
+	std::vector<Entity>	bullets;
+	std::vector<Entity>	collidables;
+	Background	background;
 };
 
-int shared_players_hp(game *game);
-game *get_game(void);
+int shared_players_hp(Game *game);
+Game *get_game(void);
 
 //background
 //collidables

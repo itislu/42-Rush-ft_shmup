@@ -14,9 +14,9 @@
 int map_width;
 int map_height;
 
-game *get_game(void)
+Game *get_game(void)
 {
-	static game game{};
+	static Game game{};
 
 	return (&game);
 }
@@ -51,7 +51,7 @@ WINDOW *create_win(int size_y, int size_x , int pos_y, int pox_x)
 
 void	init_win()
 {
-	game *game = get_game();
+	Game *game = get_game();
 	game->game_win = create_win(game->game_height, game->game_width, GAME_WINDOW_Y, GAME_WINDOW_X);
 	game->status_win = create_win(game->status_height, game->status_width, STATUS_WINDOW_Y, STATUS_WINDOW_X);
 	wrefresh(game->game_win);
@@ -60,12 +60,12 @@ void	init_win()
 
 void delete_win()
 {
-	game *game = get_game();
+	Game *game = get_game();
 	delwin(game->game_win);
 	delwin(game->status_win);
 }
 
-int shared_players_hp(game *game)
+int shared_players_hp(Game *game)
 {
 	int shared_hp = 0;
 	for (auto& player : game->players) {
@@ -74,7 +74,7 @@ int shared_players_hp(game *game)
 	return shared_hp;
 }
 
-void	print_status(game *game)
+void	print_status(Game *game)
 {
 	for (int j = 0; j < game->status_height; j++)
 	{
@@ -96,7 +96,7 @@ void	print_status(game *game)
 	wrefresh(game->status_win);
 }
 
-bool	is_bullet(game *game, int y, int x, int type)
+bool	is_bullet(Game *game, int y, int x, int type)
 {
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
@@ -108,7 +108,7 @@ bool	is_bullet(game *game, int y, int x, int type)
 	return (false);
 }
 
-bool	is_enemy(game *game, int y, int x, int type)
+bool	is_enemy(Game *game, int y, int x, int type)
 {
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
@@ -125,7 +125,7 @@ bool	is_enemy(game *game, int y, int x, int type)
 
 } */
 
-void print_gameover(game *game)
+void print_gameover(Game *game)
 {
 	const size_t game_over_height = sizeof(game_over) / sizeof(game_over[0]);
 	const size_t game_over_width = 40;
@@ -137,7 +137,7 @@ void print_gameover(game *game)
 	}
 }
 
-void	print_game(game *game)
+void	print_game(Game *game)
 {
 	// Clear window
 	for (int y = 0; y < game->game_height; y++)
@@ -218,19 +218,19 @@ void	print_game(game *game)
 
 void	print_stuff()
 {
-	game *game = get_game();
+	Game *game = get_game();
 
 	print_game(game);
 	print_status(game);
 	//refresh();
 }
 
-void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type, int source)
+void	spawn_enemy_bullet(Game *game, Entity *enemy, int bullet_type, int source)
 {
 	enemy->shoot_cooldown = get_current_time();
 	if (enemy->type != BOSS && rand() % 2 == 0)
 		return ;
-	entity bullet = {};
+	Entity bullet = {};
 	bullet.type = bullet_type;
 	bullet.source = source;
 	bullet.status = 1;
@@ -241,17 +241,17 @@ void	spawn_enemy_bullet(game *game, entity *enemy, int bullet_type, int source)
 	game->bullets.push_back(bullet);
 }
 
-void	move_p_bullet(entity *bullet)
+void	move_p_bullet(Entity *bullet)
 {
 	bullet->move_cooldown = get_current_time();
 	bullet->previous_pos = bullet->current_pos;
 	bullet->current_pos.x++;
 }
 
-std::optional<player *> find_nearest_player_in_x(game *game, entity *entity)
+std::optional<Player *> find_nearest_player_in_x(Game *game, Entity *entity)
 {
 	int min_distance_y = INT_MAX;
-	std::optional<player *> nearest_player = std::nullopt;
+	std::optional<Player *> nearest_player = std::nullopt;
 
 	for (auto& player : game->players) {
 		if (player.current_pos.x != entity->current_pos.x) {
@@ -266,7 +266,7 @@ std::optional<player *> find_nearest_player_in_x(game *game, entity *entity)
 	return nearest_player;
 }
 
-void	move_enemy_bullets(game *game, entity *bullet)
+void	move_enemy_bullets(Game *game, Entity *bullet)
 {
 	bullet->move_cooldown = get_current_time();
 	bullet->previous_pos = bullet->current_pos;
@@ -288,7 +288,7 @@ void	move_enemy_bullets(game *game, entity *bullet)
 		bullet->current_pos.x--;
 }
 
-void	move_enemy(entity *enemy)
+void	move_enemy(Entity *enemy)
 {
 	enemy->move_cooldown = get_current_time();
 	if (enemy->pattern_idx >= enemy->pattern.size())
@@ -299,7 +299,7 @@ void	move_enemy(entity *enemy)
 	enemy->pattern_idx++;
 }
 
-void	update_entities(game *game)
+void	update_entities(Game *game)
 {
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
@@ -347,9 +347,9 @@ void	update_entities(game *game)
 	}
 }
 
-void	spawn_basic_enemy(game *game, int y, int x)
+void	spawn_basic_enemy(Game *game, int y, int x)
 {
-	entity enemy = {};
+	Entity enemy = {};
 	enemy.status = 1;
 	enemy.type = BASIC_ENEMY;
 	enemy.current_pos.y = y;
@@ -362,9 +362,9 @@ void	spawn_basic_enemy(game *game, int y, int x)
 	game->enemies.push_back(enemy);
 }
 
-void	spawn_enemy_1(game *game, int y, int x)
+void	spawn_enemy_1(Game *game, int y, int x)
 {
-	entity enemy = {};
+	Entity enemy = {};
 	enemy.status = 1;
 	enemy.type = ENEMY_1;
 	enemy.current_pos.y = y;
@@ -377,9 +377,9 @@ void	spawn_enemy_1(game *game, int y, int x)
 	game->enemies.push_back(enemy);
 }
 
-void	spawn_enemy_2(game *game, int y, int x)
+void	spawn_enemy_2(Game *game, int y, int x)
 {
-	entity enemy = {};
+	Entity enemy = {};
 	enemy.status = 1;
 	enemy.type = ENEMY_2;
 	enemy.current_pos.y = y;
@@ -392,9 +392,9 @@ void	spawn_enemy_2(game *game, int y, int x)
 	game->enemies.push_back(enemy);
 }
 
-void	spawn_boss(game *game, int y, int x, int id)
+void	spawn_boss(Game *game, int y, int x, int id)
 {
-	entity enemy = {};
+	Entity enemy = {};
 	enemy.status = 1;
 	enemy.id = id;
 	enemy.type = BOSS;
@@ -410,7 +410,7 @@ void	spawn_boss(game *game, int y, int x, int id)
 	game->enemies.push_back(enemy);
 }
 
-void	spawn_entities(game *game)
+void	spawn_entities(Game *game)
 {
 	static int i = 1;
 	if (!(get_current_time() - game->enemy_spawn_cooldown > 4000))
@@ -454,7 +454,7 @@ void	spawn_entities(game *game)
 	}
 }
 
-void	check_bullet_collision(game *game, entity *entity, int type)
+void	check_bullet_collision(Game *game, Entity *entity, int type)
 {
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
@@ -469,7 +469,7 @@ void	check_bullet_collision(game *game, entity *entity, int type)
 	}
 }
 
-void kill_boss(game *game)
+void kill_boss(Game *game)
 {
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
@@ -479,7 +479,7 @@ void kill_boss(game *game)
 	}
 }
 
-void	check_enemy_collision(game *game, entity *entity, int type)
+void	check_enemy_collision(Game *game, Entity *entity, int type)
 {
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
@@ -511,7 +511,7 @@ void	check_enemy_collision(game *game, entity *entity, int type)
 	}
 }
 
-void	check_collisions(game *game)
+void	check_collisions(Game *game)
 {
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
@@ -546,34 +546,34 @@ void	check_collisions(game *game)
 	}
 }
 
-void	prune_inactive(game *game_)
+void	prune_inactive(Game *game)
 {
-	game_->bullets.erase(
-		std::remove_if(game_->bullets.begin(), game_->bullets.end(), 
-			[](entity& object){ 
+	game->bullets.erase(
+		std::remove_if(game->bullets.begin(), game->bullets.end(), 
+			[](Entity& object){ 
 				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=   map_height || object.current_pos.x >= map_width)
 					return (true);
 				else
 					return (false);
 			}), 
-		game_->bullets.end());
+		game->bullets.end());
 
-	game_->enemies.erase(
-		std::remove_if(game_->enemies.begin(), game_->enemies.end(), 
-			[](entity& object){ 
+	game->enemies.erase(
+		std::remove_if(game->enemies.begin(), game->enemies.end(), 
+			[](Entity& object){ 
 				if (object.status == false || object.current_pos.y < 0 || object.current_pos.x < 0 || object.current_pos.y >=   map_height || object.current_pos.x >= map_width)
 					return (true);
 				else
 					return (false);
 			}), 
-		game_->enemies.end());
+		game->enemies.end());
 
-	game_->background.prune();
+	game->background.prune();
 }
 
 bool	check_terminal_size()
 {
-	game *game = get_game();
+	Game *game = get_game();
 	int y;
 	int x;
 
@@ -598,7 +598,7 @@ bool	check_terminal_size()
 
 bool	game_loop()
 {
-	game *game = get_game();
+	Game *game = get_game();
 	long	time_reference = get_current_time();
 	game->time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
@@ -656,8 +656,8 @@ bool	game_loop()
 
 void	init_players(int amount)
 {
-	game *game = get_game();
-	coordinate start = {(map_width / 2) - 3,  map_height / 2};
+	Game *game = get_game();
+	Coordinate start = {(map_width / 2) - 3,  map_height / 2};
 	const int spacing = 4;
 
 	start.y -= (spacing / 2) * (amount - 1);
@@ -681,7 +681,7 @@ void set_map_size()
 
 int	menu()
 {
-	//game *game = get_game();
+	//Game *game = get_game();
 	int i = 1;
 	while (1)
 	{
