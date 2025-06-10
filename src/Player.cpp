@@ -87,7 +87,15 @@ bool Player::on_collision(Entity* entity)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+		if (get_current_time() - invis_frames < 1000 && (((get_current_time() - invis_frames) / 200) % 2 == 0)) {
+			wattr_on(game_win, A_REVERSE, 0);
+			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 3, L" "); // will cause the right side border on that line to disappear if player is on the right side edge
+			wattr_off(game_win, A_REVERSE, 0);
+		}
+		else {
+			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+		}
 	}
 	else {
 		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, L"💥");
