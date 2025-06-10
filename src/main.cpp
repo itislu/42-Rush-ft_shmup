@@ -685,20 +685,22 @@ int	menu()
 	int i = 1;
 	while (1)
 	{
+		wattr_on(stdscr, A_BOLD, 0);
 		if (i == 1)
 		{
-			wattr_on(stdscr, A_REVERSE | A_BOLD, 0);
+			wattr_on(stdscr, A_REVERSE, 0);
 			mvprintw(0, 0, "Single Player ");
-			wattr_off(stdscr, A_REVERSE | A_BOLD, 0);
+			wattr_off(stdscr, A_REVERSE, 0);
 			mvprintw(1, 0, "Multiplayer ");
 		}
 		else
 		{
 			mvprintw(0, 0, "Single Player ");
-			wattr_on(stdscr, A_REVERSE | A_BOLD, 0);
+			wattr_on(stdscr, A_REVERSE, 0);
 			mvprintw(1, 0, "Multiplayer ");
-			wattr_off(stdscr, A_REVERSE | A_BOLD, 0);
+			wattr_off(stdscr, A_REVERSE, 0);
 		}
+		wattr_off(stdscr, A_BOLD, 0);
 		int input = tolower(getch());
 		if (input == 'q' || input == KEY_ESCAPE)
 			return -1;
