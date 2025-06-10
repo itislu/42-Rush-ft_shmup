@@ -13,7 +13,9 @@ https://github.com/user-attachments/assets/a0feb5f5-e43a-499f-8507-a1274846192c
 
 ## About
 
-The game is inspired by classic shoot 'em ups like Space Invaders, R-Type and Gradius, and was built entirely for the terminal using ncurses.
+The game is inspired by classic shoot 'em ups like Space Invaders, R-Type and Gradius, and was built entirely for the terminal using ncurses. We wrote it mostly in C, with some C++.
+
+The project was made in a setting which we at 42 Vienna call a *Rush* - we randomly get put into teams of 2-3 peers and have exactly 2 days and 5 hours.
 
 ---
 
@@ -21,8 +23,8 @@ The game is inspired by classic shoot 'em ups like Space Invaders, R-Type and Gr
 
 - **Terminal-based gameplay** using ncurses library
 - **3 Enemy types and 1 Boss** with different bullets and movement patterns
-- **Multiplayer** for 2 players
 - **Game area adjusts to terminal size** - keep it small for easier gameplay
+- **Multiplayer** for 2 players
 
 ---
 
