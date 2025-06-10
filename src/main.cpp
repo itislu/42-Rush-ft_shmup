@@ -61,8 +61,16 @@ void	init_win()
 void delete_win()
 {
 	Game *game = get_game();
-	delwin(game->game_win);
-	delwin(game->status_win);
+	if (game->game_win != NULL)
+	{
+		delwin(game->game_win);
+		game->game_win = NULL;
+	}
+	if (game->status_win != NULL)
+	{
+		delwin(game->status_win);
+		game->status_win = NULL;
+	}
 }
 
 int shared_players_hp(Game *game)
@@ -120,11 +128,6 @@ bool	is_enemy(Game *game, int y, int x, int type)
 	}
 	return (false);
 }
-
-/* void	print_character_with(int type)
-{
-
-} */
 
 void print_gameover(Game *game)
 {
