@@ -49,9 +49,7 @@ make
 ./ft_shmup
 ```
 
----
-
-## Requirements
+### Requirements
 
 - C++ compiler (g++/clang)
 - GNU Make
