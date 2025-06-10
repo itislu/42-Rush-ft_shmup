@@ -163,14 +163,14 @@ void	print_game(Game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
 		}
 		else if (bullet.type == ENEMY_BULLET) {
-			/* if (bullet.source == BOSS)
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-			else */
+			if (bullet.source == BOSS)
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
 				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
-			/* if (bullet.source == BOSS)
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-			else */
+			if (bullet.source == BOSS)
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
 				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 		}
 		else if (bullet.type == ENEMY_1_BULLET) {
@@ -201,6 +201,9 @@ void	print_game(Game *game)
 			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🗿");
 		}
 		else if (enemy.type == BOSS) {
+			if (enemy.id == 5)
+				mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👀");
+			else
 			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🟥");
 		}
 	}
@@ -340,7 +343,7 @@ void	update_entities(Game *game)
 			&& get_current_time() - game->enemies[i].move_cooldown > 200)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
 				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, BOSS);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 500)
@@ -417,7 +420,7 @@ void	spawn_entities(Game *game)
 	if (!(get_current_time() - game->enemy_spawn_cooldown > 4000))
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
-	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 20000 && game->boss_status == 0) //change values
+	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 25000 && game->boss_status == 0) //change values
 	{
 		//game->boss_health 
 		spawn_boss(game,  map_height / 2 + 1, map_width - 6, 1);
@@ -498,7 +501,7 @@ void	check_enemy_collision(Game *game, Entity *entity, int type)
 			else if (type == BOSS) {
 				game->boss_health--;
 				if (game->boss_health <= 0) {
-					game->score += 500;
+					game->score += BOSS_POINTS;
 					game->spawn_boss_cooldown = get_current_time();
 					game->boss_status = 0;
 					kill_boss(game);
