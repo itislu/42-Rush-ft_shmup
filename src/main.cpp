@@ -141,8 +141,6 @@ void print_gameover(Game *game)
 void	print_game(Game *game)
 {
 	// Clear window
-	wclear(game->game_win); //apparently this is needed to remove the trailing whitespace with A_REVERSE
-							//caused by the invis frames flash (home pc is not causing flickering, need to test on campus)
 	for (int y = 0; y < game->game_height; y++)
 	{
 		for(int x = 0; x < game->game_width; x++)
