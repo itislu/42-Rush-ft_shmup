@@ -539,9 +539,9 @@ void	check_collisions(Game *game)
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++) {
 		if (game->enemies[i].status == 1
-		    && (game->enemies[i].type == BASIC_ENEMY
-		        || game->enemies[i].type == ENEMY_2
-		        || game->enemies[i].type == ENEMY_1 
+			&& (game->enemies[i].type == BASIC_ENEMY
+				|| game->enemies[i].type == ENEMY_2
+				|| game->enemies[i].type == ENEMY_1 
 				|| game->enemies[i].type == BOSS)) {
 			for (auto& player : game->players) {
 				player.on_collision(&game->enemies[i]);
@@ -668,20 +668,31 @@ void	init_players(int amount)
 	}
 }
 
-void set_map_size()
+bool set_map_size()
 {
 	int term_height;
 	int term_width;
 	getmaxyx(stdscr, term_height, term_width);
 
-    map_height = term_height - STATUS_WINDOW_HEIGHT - 2;
-    map_width = (term_width / 2) - 2;
-    // map_width += map_width % 2;
+	while (term_height < MIN_TERMINAL_HEIGHT || term_width < MIN_TERMINAL_WIDTH)
+	{
+		clear();
+		mvprintw(0, 0, "TERMINAL TOO SMALL");
+		mvprintw(1, 0, "  minimum: %dx%d", MIN_TERMINAL_HEIGHT, MIN_TERMINAL_WIDTH);
+		mvprintw(2, 0, "  current: %dx%d", term_height, term_width);
+		refresh();
+		int input = tolower(getch());
+		if (input == 'q' || input == KEY_ESCAPE)
+			return (false);
+		getmaxyx(stdscr, term_height, term_width);
+	}
+	map_height = term_height - STATUS_WINDOW_HEIGHT - 2;
+	map_width = (term_width / 2) - 2;
+	return (true);
 }
 
 int	menu()
 {
-	//Game *game = get_game();
 	int i = 1;
 	while (1)
 	{
@@ -719,16 +730,15 @@ try {
 	if (!init_ncurses())
 		return (1);
 	int i = menu();
-	set_map_size();
-	init_win();
-	if (i != -1)
+	if (i != -1 && set_map_size())
 	{
+		init_win();
 		init_players(i);
 		refresh();
 		print_stuff();
 		game_loop();
+		delete_win();
 	}
-	delete_win();
 	endwin();
 	return (0);
 } 
