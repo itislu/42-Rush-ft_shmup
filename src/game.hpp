@@ -113,12 +113,11 @@ struct Player : public Entity
 	constexpr static std::array<const wchar_t[2], max_players> appearances =
 		{{{L"🛸"},
 		  {L"🚀"}}};
-	static int created_players;
 
-	Player(Coordinate position);
+	Player(int id, Coordinate position);
 	bool update(int input, Game *game);
 	void shoot(Game *game);
-	bool on_collision(Entity *entity);
+	bool on_collision(Entity *entity, Game *game);
 	void print(WINDOW *game_win);
 	
 	const wchar_t *appearance;
@@ -134,8 +133,8 @@ struct Game
 {
 	Game();
 
-	WINDOW	*game_win;
-	WINDOW	*status_win;
+	WINDOW	*game_win = NULL;
+	WINDOW	*status_win = NULL;
 	int		term_height;
 	int		term_width;
 	int		game_height;
@@ -143,13 +142,13 @@ struct Game
 	int		status_height;
 	int		status_width;
 	std::vector<Player> players;
-	long	score;
-	long	start_time;
-	long	gameover_time;
-	long	enemy_spawn_cooldown;
-	int		boss_health;
-	bool	boss_status;
-	long	spawn_boss_cooldown;
+	long	score = 0;
+	long	start_time = 0;
+	long	gameover_time = 0;
+	long	enemy_spawn_cooldown = 0;
+	int		boss_health = 0;
+	bool	boss_status = 0;
+	long	spawn_boss_cooldown = 0;
 	//Entity	bullets[MAX_BULLETS];
 	/* Window	game_win;
 	Window	status_win;
@@ -161,7 +160,6 @@ struct Game
 };
 
 int shared_players_hp(Game *game);
-Game *get_game(void);
 
 //background
 //collidables

@@ -36,6 +36,7 @@ The project was made in a setting which we at 42 Vienna call a *Rush* - we rando
 - Player 2
   - `Arrow keys`: Move your ship
   - `Enter`: Shoot
+- `R`: Restart when gameover
 - `Q` | `Esc`: Quit game
 
 ---

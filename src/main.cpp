@@ -14,13 +14,6 @@
 int map_width;
 int map_height;
 
-Game *get_game(void)
-{
-	static Game game{};
-
-	return (&game);
-}
-
 short rgb_to_ncurses(int rgb)
 {
 	return (rgb * 1000 / 255);
@@ -56,27 +49,28 @@ WINDOW *create_win(int size_y, int size_x , int pos_y, int pox_x)
 	return (win);
 }
 
-void	init_win()
+void	init_win(Game *game)
 {
-	Game *game = get_game();
 	game->game_win = create_win(game->game_height, game->game_width, GAME_WINDOW_Y, GAME_WINDOW_X);
 	game->status_win = create_win(game->status_height, game->status_width, STATUS_WINDOW_Y, STATUS_WINDOW_X);
 	wrefresh(game->game_win);
 	wrefresh(game->status_win);
+	clear();
 }
 
-void delete_win()
+void	delete_win(Game *game)
 {
-	Game *game = get_game();
 	if (game->game_win != NULL)
 	{
 		delwin(game->game_win);
 		game->game_win = NULL;
+		clear();
 	}
 	if (game->status_win != NULL)
 	{
 		delwin(game->status_win);
 		game->status_win = NULL;
+		clear();
 	}
 }
 
@@ -236,13 +230,10 @@ void	print_game(Game *game)
 	wrefresh(game->game_win);
 }
 
-void	print_stuff()
+void	print_stuff(Game *game)
 {
-	Game *game = get_game();
-
 	print_game(game);
 	print_status(game);
-	//refresh();
 }
 
 void	spawn_enemy_bullet(Game *game, Entity *enemy, int bullet_type, int source)
@@ -434,7 +425,8 @@ void	spawn_boss(Game *game, int y, int x, int id)
 void	spawn_entities(Game *game)
 {
 	static int i = 0;
-	if (!(get_current_time() - game->enemy_spawn_cooldown > 5000))
+	if (!(get_current_time() - game->enemy_spawn_cooldown > 5000)
+		|| shared_players_hp(game) == 0)
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
 	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 25000 && game->boss_status == 0) //change values
@@ -553,7 +545,7 @@ void	check_collisions(Game *game)
 		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET || game->bullets[i].type == ENEMY_1_BULLET))
 		{
 			for (auto& player : game->players) {
-				player.on_collision(&game->bullets[i]);
+				player.on_collision(&game->bullets[i], game);
 			}
 		}
 		
@@ -565,7 +557,7 @@ void	check_collisions(Game *game)
 				|| game->enemies[i].type == ENEMY_1 
 				|| game->enemies[i].type == BOSS)) {
 			for (auto& player : game->players) {
-				player.on_collision(&game->enemies[i]);
+				player.on_collision(&game->enemies[i], game);
 			}
 		}
 	}
@@ -596,9 +588,8 @@ void	prune_inactive(Game *game)
 	game->background.prune();
 }
 
-bool	check_terminal_size()
+bool	check_terminal_size(Game *game)
 {
-	Game *game = get_game();
 	int y;
 	int x;
 
@@ -613,17 +604,16 @@ bool	check_terminal_size()
 		int input = tolower(getch());
 		if (input == 'q' || input == KEY_ESCAPE)
 			return false;
-		delete_win();
+		delete_win(game);
 		getmaxyx(stdscr, y, x);
 	}
-	init_win();
+	init_win(game);
 	nodelay(stdscr, TRUE);
 	return (true);
 }
 
-bool	game_loop()
+bool	game_loop(Game *game)
 {
-	Game *game = get_game();
 	long	time_reference = get_current_time();
 	game->start_time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
@@ -638,11 +628,13 @@ bool	game_loop()
 			time_reference = get_current_time();
 			int input = tolower(getch());
 			if (input == 'q' || input == KEY_ESCAPE)
-				break ;
+				return false;
+			if (input == 'r' && shared_players_hp(game) <= 0)
+				return true;
 			if (input == KEY_RESIZE)
 			{
-				if (!check_terminal_size())
-				 return (true);
+				if (!check_terminal_size(game))
+				 return false;
 			}
 			else 
 			{
@@ -666,25 +658,22 @@ bool	game_loop()
 					game->gameover_time = get_current_time_in_seconds();
 				}
 			}
-			print_stuff();
+			print_stuff(game);
 		}
 		else
 			usleep (1000);
-		
 	}
-	return (true);
 }
 
-void	init_players(int amount)
+void	init_players(int amount, Game *game)
 {
-	Game *game = get_game();
 	Coordinate start = {(map_width / 2) - 3,  map_height / 2};
 	const int spacing = 4;
 
 	start.y -= (spacing / 2) * (amount - 1);
 
 	for (int i = 0; i < amount; ++i) {
-		game->players.emplace_back(start);
+		game->players.emplace_back(i, start);
 		start.y += spacing;
 	}
 }
@@ -714,7 +703,7 @@ bool set_map_size()
 
 int	menu()
 {
-	int i = 1;
+	static int i = 1;
 	while (1)
 	{
 		wattr_on(stdscr, A_BOLD, 0);
@@ -738,7 +727,7 @@ int	menu()
 			return -1;
 		if (input == 'w' || input == KEY_UP || input == 's' || input == KEY_DOWN)
 			i *= -1;
-		if (input == '\n')
+		if (input == '\n' || input == ' ')
 		{
 			if (i == 1)
 				return (1);
@@ -752,15 +741,18 @@ int main()
 try {
 	if (!init_ncurses())
 		return (1);
-	int i = menu();
-	if (i != -1 && set_map_size())
+	bool keep_playing = true;
+	while (keep_playing)
 	{
-		init_win();
-		init_players(i);
-		refresh();
-		print_stuff();
-		game_loop();
-		delete_win();
+		int player_count = menu();
+		if (player_count == -1 || !set_map_size())
+			break;
+		Game game;
+		init_win(&game);
+		init_players(player_count, &game);
+		print_stuff(&game);
+		keep_playing = game_loop(&game);
+		delete_win(&game);
 	}
 	endwin();
 	return (0);
