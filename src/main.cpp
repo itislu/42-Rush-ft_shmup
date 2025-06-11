@@ -739,7 +739,7 @@ int	menu()
 			return -1;
 		if (input == 'w' || input == KEY_UP || input == 's' || input == KEY_DOWN)
 			i *= -1;
-		if (input == '\n')
+		if (input == '\n' || input == ' ')
 		{
 			if (i == 1)
 				return (1);
