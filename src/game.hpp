@@ -26,6 +26,8 @@
 
 #define KEY_ESCAPE 27
 
+#define COLOR_ORANGE 100
+
 #define FPS 60
 
 #define UP {0, -1}

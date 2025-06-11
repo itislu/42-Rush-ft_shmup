@@ -21,6 +21,11 @@ Game *get_game(void)
 	return (&game);
 }
 
+short rgb_to_ncurses(int rgb)
+{
+	return (rgb * 1000 / 255);
+}
+
 bool	init_ncurses()
 {
 	if (!initscr())
@@ -39,6 +44,8 @@ bool	init_ncurses()
 	init_pair(4, COLOR_BLUE, -1);
 	init_pair(5, COLOR_MAGENTA, -1);
 	init_pair(6, COLOR_CYAN, -1);
+	init_color(COLOR_ORANGE, rgb_to_ncurses(255),rgb_to_ncurses(145),rgb_to_ncurses(0));
+	init_pair(COLOR_ORANGE, COLOR_ORANGE, -1);
 	return (true);
 }
 
@@ -182,9 +189,15 @@ void	print_game(Game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_CYAN), 0);
 		}
 		else if (bullet.type == HOMING_BULLET) {
-			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			if (bullet.source == BOSS)
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"● ");
-			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			if (bullet.source == BOSS)
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
 		}
 	}
 	for (auto& player : game->players) {
@@ -319,7 +332,7 @@ void	update_entities(Game *game)
 				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80)
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 60)
 			|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 120)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
