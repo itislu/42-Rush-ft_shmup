@@ -2,17 +2,15 @@
 #include "time.hpp"
 #include <ncurses.h>
 
-int Player::created_players = 0;
-
-Player::Player(Coordinate position)
+Player::Player(int id, Coordinate position)
     : Entity(),
-      appearance(appearances.at(created_players)),
-      control_set{controls_sets.at(created_players)}
+      appearance(appearances.at(id)),
+      control_set{controls_sets.at(id)}
 {
+	this->id = id;
 	current_pos = position;
 	status = true;
 	hp = 3;
-	++created_players;
 }
 
 bool Player::update(int input, Game* game)

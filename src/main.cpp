@@ -625,11 +625,13 @@ bool	game_loop(Game *game)
 			time_reference = get_current_time();
 			int input = tolower(getch());
 			if (input == 'q' || input == KEY_ESCAPE)
-				break ;
+				return false;
+			if (input == 'r' && shared_players_hp(game) <= 0)
+				return true;
 			if (input == KEY_RESIZE)
 			{
 				if (!check_terminal_size(game))
-				 return (true);
+				 return false;
 			}
 			else 
 			{
@@ -657,9 +659,7 @@ bool	game_loop(Game *game)
 		}
 		else
 			usleep (1000);
-		
 	}
-	return (true);
 }
 
 void	init_players(int amount, Game *game)
@@ -670,7 +670,7 @@ void	init_players(int amount, Game *game)
 	start.y -= (spacing / 2) * (amount - 1);
 
 	for (int i = 0; i < amount; ++i) {
-		game->players.emplace_back(start);
+		game->players.emplace_back(i, start);
 		start.y += spacing;
 	}
 }
@@ -700,7 +700,7 @@ bool set_map_size()
 
 int	menu()
 {
-	int i = 1;
+	static int i = 1;
 	while (1)
 	{
 		wattr_on(stdscr, A_BOLD, 0);
@@ -738,16 +738,19 @@ int main()
 try {
 	if (!init_ncurses())
 		return (1);
-	int i = menu();
-	if (i != -1 && set_map_size())
+	bool keep_playing = true;
+	while (keep_playing)
 	{
+		int player_count = menu();
+		if (player_count == -1 || !set_map_size())
+			break;
 		Game game;
 		init_win(&game);
-		init_players(i, &game);
-		refresh();
+		init_players(player_count, &game);
 		print_stuff(&game);
-		game_loop(&game);
+		keep_playing = game_loop(&game);
 		delete_win(&game);
+		clear();
 	}
 	endwin();
 	return (0);

@@ -113,9 +113,8 @@ struct Player : public Entity
 	constexpr static std::array<const wchar_t[2], max_players> appearances =
 		{{{L"🛸"},
 		  {L"🚀"}}};
-	static int created_players;
 
-	Player(Coordinate position);
+	Player(int id, Coordinate position);
 	bool update(int input, Game *game);
 	void shoot(Game *game);
 	bool on_collision(Entity *entity, Game *game);
