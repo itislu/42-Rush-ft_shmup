@@ -434,7 +434,8 @@ void	spawn_boss(Game *game, int y, int x, int id)
 void	spawn_entities(Game *game)
 {
 	static int i = 0;
-	if (!(get_current_time() - game->enemy_spawn_cooldown > 5000))
+	if (!(get_current_time() - game->enemy_spawn_cooldown > 5000)
+		|| shared_players_hp(game) == 0)
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
 	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 25000 && game->boss_status == 0) //change values
