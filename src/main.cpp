@@ -332,7 +332,7 @@ void	update_entities(Game *game)
 				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80)
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 60)
 			|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 120)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
