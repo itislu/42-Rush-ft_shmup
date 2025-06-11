@@ -59,7 +59,7 @@ void Player::shoot(Game* game)
 	}
 }
 
-bool Player::on_collision(Entity* entity)
+bool Player::on_collision(Entity* entity, Game *game)
 {
 	if (status == false
 	    || !((current_pos == entity->current_pos)
@@ -78,7 +78,7 @@ bool Player::on_collision(Entity* entity)
 	else if (entity->type != BOSS) {
 		entity->status = false;
 	}
-	if (shared_players_hp(get_game()) <= 0) {
+	if (shared_players_hp(game) <= 0) {
 		status = false;
 	}
 	return true;

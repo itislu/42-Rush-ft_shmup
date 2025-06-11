@@ -14,13 +14,6 @@
 int map_width;
 int map_height;
 
-Game *get_game(void)
-{
-	static Game game{};
-
-	return (&game);
-}
-
 short rgb_to_ncurses(int rgb)
 {
 	return (rgb * 1000 / 255);
@@ -56,18 +49,16 @@ WINDOW *create_win(int size_y, int size_x , int pos_y, int pox_x)
 	return (win);
 }
 
-void	init_win()
+void	init_win(Game *game)
 {
-	Game *game = get_game();
 	game->game_win = create_win(game->game_height, game->game_width, GAME_WINDOW_Y, GAME_WINDOW_X);
 	game->status_win = create_win(game->status_height, game->status_width, STATUS_WINDOW_Y, STATUS_WINDOW_X);
 	wrefresh(game->game_win);
 	wrefresh(game->status_win);
 }
 
-void delete_win()
+void	delete_win(Game *game)
 {
-	Game *game = get_game();
 	if (game->game_win != NULL)
 	{
 		delwin(game->game_win);
@@ -236,13 +227,10 @@ void	print_game(Game *game)
 	wrefresh(game->game_win);
 }
 
-void	print_stuff()
+void	print_stuff(Game *game)
 {
-	Game *game = get_game();
-
 	print_game(game);
 	print_status(game);
-	//refresh();
 }
 
 void	spawn_enemy_bullet(Game *game, Entity *enemy, int bullet_type, int source)
@@ -554,7 +542,7 @@ void	check_collisions(Game *game)
 		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET || game->bullets[i].type == ENEMY_1_BULLET))
 		{
 			for (auto& player : game->players) {
-				player.on_collision(&game->bullets[i]);
+				player.on_collision(&game->bullets[i], game);
 			}
 		}
 		
@@ -566,7 +554,7 @@ void	check_collisions(Game *game)
 				|| game->enemies[i].type == ENEMY_1 
 				|| game->enemies[i].type == BOSS)) {
 			for (auto& player : game->players) {
-				player.on_collision(&game->enemies[i]);
+				player.on_collision(&game->enemies[i], game);
 			}
 		}
 	}
@@ -597,9 +585,8 @@ void	prune_inactive(Game *game)
 	game->background.prune();
 }
 
-bool	check_terminal_size()
+bool	check_terminal_size(Game *game)
 {
-	Game *game = get_game();
 	int y;
 	int x;
 
@@ -614,17 +601,16 @@ bool	check_terminal_size()
 		int input = tolower(getch());
 		if (input == 'q' || input == KEY_ESCAPE)
 			return false;
-		delete_win();
+		delete_win(game);
 		getmaxyx(stdscr, y, x);
 	}
-	init_win();
+	init_win(game);
 	nodelay(stdscr, TRUE);
 	return (true);
 }
 
-bool	game_loop()
+bool	game_loop(Game *game)
 {
-	Game *game = get_game();
 	long	time_reference = get_current_time();
 	game->start_time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
@@ -642,7 +628,7 @@ bool	game_loop()
 				break ;
 			if (input == KEY_RESIZE)
 			{
-				if (!check_terminal_size())
+				if (!check_terminal_size(game))
 				 return (true);
 			}
 			else 
@@ -667,7 +653,7 @@ bool	game_loop()
 					game->gameover_time = get_current_time_in_seconds();
 				}
 			}
-			print_stuff();
+			print_stuff(game);
 		}
 		else
 			usleep (1000);
@@ -676,9 +662,8 @@ bool	game_loop()
 	return (true);
 }
 
-void	init_players(int amount)
+void	init_players(int amount, Game *game)
 {
-	Game *game = get_game();
 	Coordinate start = {(map_width / 2) - 3,  map_height / 2};
 	const int spacing = 4;
 
@@ -756,12 +741,13 @@ try {
 	int i = menu();
 	if (i != -1 && set_map_size())
 	{
-		init_win();
-		init_players(i);
+		Game game;
+		init_win(&game);
+		init_players(i, &game);
 		refresh();
-		print_stuff();
-		game_loop();
-		delete_win();
+		print_stuff(&game);
+		game_loop(&game);
+		delete_win(&game);
 	}
 	endwin();
 	return (0);
