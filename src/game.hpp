@@ -26,6 +26,8 @@
 
 #define KEY_ESCAPE 27
 
+#define COLOR_ORANGE 100
+
 #define FPS 60
 
 #define UP {0, -1}
@@ -35,7 +37,8 @@
 
 #define ENEMY_1_POINTS 5
 #define BASIC_ENEMY_POINTS 10
-#define ENEMY_2_POINTS 30
+#define ENEMY_2_POINTS 50
+#define BOSS_POINTS 1000
 
 extern int map_width;
 extern int map_height;

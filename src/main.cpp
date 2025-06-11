@@ -21,6 +21,11 @@ Game *get_game(void)
 	return (&game);
 }
 
+short rgb_to_ncurses(int rgb)
+{
+	return (rgb * 1000 / 255);
+}
+
 bool	init_ncurses()
 {
 	if (!initscr())
@@ -39,6 +44,8 @@ bool	init_ncurses()
 	init_pair(4, COLOR_BLUE, -1);
 	init_pair(5, COLOR_MAGENTA, -1);
 	init_pair(6, COLOR_CYAN, -1);
+	init_color(COLOR_ORANGE, rgb_to_ncurses(255),rgb_to_ncurses(145),rgb_to_ncurses(0));
+	init_pair(COLOR_ORANGE, COLOR_ORANGE, -1);
 	return (true);
 }
 
@@ -166,14 +173,14 @@ void	print_game(Game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_GREEN), 0);
 		}
 		else if (bullet.type == ENEMY_BULLET) {
-			/* if (bullet.source == BOSS)
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-			else */
+			if (bullet.source == BOSS)
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
 				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"——");
-			/* if (bullet.source == BOSS)
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
-			else */
+			if (bullet.source == BOSS)
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
 				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_MAGENTA), 0);
 		}
 		else if (bullet.type == ENEMY_1_BULLET) {
@@ -182,9 +189,15 @@ void	print_game(Game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_CYAN), 0);
 		}
 		else if (bullet.type == HOMING_BULLET) {
-			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			if (bullet.source == BOSS)
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
+				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"● ");
-			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			if (bullet.source == BOSS)
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			else
+				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
 		}
 	}
 	for (auto& player : game->players) {
@@ -204,7 +217,10 @@ void	print_game(Game *game)
 			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🗿");
 		}
 		else if (enemy.type == BOSS) {
-			mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🟥");
+			if (enemy.id == 5)
+				mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"👀");
+			else
+				mvwaddwstr(game->game_win, enemy.current_pos.y + 1, enemy.current_pos.x * 2 + 2, L"🟥");
 		}
 	}
 	for (auto& collidable : game->collidables) {
@@ -316,7 +332,7 @@ void	update_entities(Game *game)
 				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80)
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 60)
 			|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 120)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
@@ -344,7 +360,7 @@ void	update_entities(Game *game)
 			&& get_current_time() - game->enemies[i].move_cooldown > 200)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1200)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
 				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, BOSS);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
 			&& get_current_time() - game->enemies[i].shoot_cooldown > 400)
@@ -506,7 +522,7 @@ void	check_enemy_collision(Game *game, Entity *entity, int type)
 			else if (type == BOSS) {
 				game->boss_health--;
 				if (game->boss_health <= 0) {
-					game->score += 500;
+					game->score += BOSS_POINTS;
 					game->spawn_boss_cooldown = get_current_time();
 					game->boss_status = 0;
 					kill_boss(game);
@@ -701,20 +717,22 @@ int	menu()
 	int i = 1;
 	while (1)
 	{
+		wattr_on(stdscr, A_BOLD, 0);
 		if (i == 1)
 		{
 			wattr_on(stdscr, A_REVERSE, 0);
-			mvprintw(0, 0, "Single Player");
+			mvprintw(0, 0, "Single Player ");
 			wattr_off(stdscr, A_REVERSE, 0);
-			mvprintw(1, 0, "Multiplayer");
+			mvprintw(1, 0, "Multiplayer ");
 		}
 		else
 		{
-			mvprintw(0, 0, "Single Player");
+			mvprintw(0, 0, "Single Player ");
 			wattr_on(stdscr, A_REVERSE, 0);
-			mvprintw(1, 0, "Multiplayer");
+			mvprintw(1, 0, "Multiplayer ");
 			wattr_off(stdscr, A_REVERSE, 0);
 		}
+		wattr_off(stdscr, A_BOLD, 0);
 		int input = tolower(getch());
 		if (input == 'q' || input == KEY_ESCAPE)
 			return -1;

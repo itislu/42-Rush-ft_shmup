@@ -87,7 +87,9 @@ bool Player::on_collision(Entity* entity)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+		if (!(get_current_time() - invis_frames < 1000 && (((get_current_time() - invis_frames) / 100) % 2 == 0))) {
+			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+		}
 	}
 	else {
 		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, L"💥");
