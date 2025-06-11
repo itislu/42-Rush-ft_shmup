@@ -87,14 +87,7 @@ bool Player::on_collision(Entity* entity)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		if (get_current_time() - invis_frames < 1000 && (((get_current_time() - invis_frames) / 200) % 2 == 0)) {
-			wattr_on(game_win, A_REVERSE | COLOR_PAIR(COLOR_RED), 0);
-			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
-			if (wcwidth(*appearance) == 1)
-				mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 3, L" ");
-			wattr_off(game_win, A_REVERSE | COLOR_PAIR(COLOR_RED), 0);
-		}
-		else {
+		if (!(get_current_time() - invis_frames < 1000 && (((get_current_time() - invis_frames) / 100) % 2 == 0))) {
 			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
 		}
 	}
