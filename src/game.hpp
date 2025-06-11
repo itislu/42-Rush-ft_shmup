@@ -11,6 +11,9 @@
 #include <unistd.h>
 #include <vector>
 
+#define MIN_TERMINAL_HEIGHT 20
+#define MIN_TERMINAL_WIDTH 50
+
 #define GAME_WINDOW_Y 3
 #define GAME_WINDOW_X 0
 
