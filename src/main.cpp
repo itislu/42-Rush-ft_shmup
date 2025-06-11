@@ -55,6 +55,7 @@ void	init_win(Game *game)
 	game->status_win = create_win(game->status_height, game->status_width, STATUS_WINDOW_Y, STATUS_WINDOW_X);
 	wrefresh(game->game_win);
 	wrefresh(game->status_win);
+	clear();
 }
 
 void	delete_win(Game *game)
@@ -63,11 +64,13 @@ void	delete_win(Game *game)
 	{
 		delwin(game->game_win);
 		game->game_win = NULL;
+		clear();
 	}
 	if (game->status_win != NULL)
 	{
 		delwin(game->status_win);
 		game->status_win = NULL;
+		clear();
 	}
 }
 
@@ -750,7 +753,6 @@ try {
 		print_stuff(&game);
 		keep_playing = game_loop(&game);
 		delete_win(&game);
-		clear();
 	}
 	endwin();
 	return (0);
