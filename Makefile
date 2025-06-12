@@ -15,6 +15,9 @@ LIBS_LOCAL		=	$(LIB_ROOT_DIR)/libftpp/libftpp.a \
 					$(LIB_ROOT_DIR)/libft/libft.a
 LIBS_EXTERN		:=	ncursesw
 CPPFLAGS		:=	-D _XOPEN_SOURCE_EXTENDED=1
+ifneq (, $(wildcard /usr/local/opt/ncurses/lib))
+LDFLAGS			:=	-L/usr/local/opt/ncurses/lib
+endif
 
 
 include				$(MAKEFILES_DIR)/config.mk
