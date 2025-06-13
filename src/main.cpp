@@ -418,7 +418,16 @@ void	spawn_boss(Game *game, int y, int x, int id)
 	enemy.damage = 2;
 	enemy.shoot_cooldown = get_current_time();
 	enemy.move_cooldown = get_current_time();
-	enemy.pattern = {UP, UP, UP, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP, UP, UP};
+	for (int i = 0; i < (map_height / 2) - 3; i++){
+		enemy.pattern.push_back(UP);
+	}
+	for (int i = 0; i < ((map_height / 2) - 3) * 2; i++){
+		enemy.pattern.push_back(DOWN);
+	}
+	for (int i = 0; i < (map_height / 2) - 3; i++){
+		enemy.pattern.push_back(UP);
+	}
+	//enemy.pattern = {UP, UP, UP, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP, UP, UP};
 	game->enemies.push_back(enemy);
 }
 
