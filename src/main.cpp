@@ -514,6 +514,10 @@ void	check_enemy_collision(Game *game, Entity *entity, int type)
 			else if (type == BOSS) {
 				game->boss_health--;
 				if (game->boss_health <= 0) {
+					for (auto& player : game->players) {
+						if (player.status)
+							player.hp += 1;
+					}
 					game->score += BOSS_POINTS;
 					game->spawn_boss_cooldown = get_current_time();
 					game->boss_status = 0;
