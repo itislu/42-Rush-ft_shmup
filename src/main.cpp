@@ -416,10 +416,10 @@ void	update_entities(Game *game)
 			&& get_current_time() - game->enemies[i].move_cooldown > 200)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
 				spawn_enemy_bullet(game, &game->enemies[i], TRUE_HOMING_BULLET, BOSS);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 400)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 200)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BOSS);
 	}
 }
