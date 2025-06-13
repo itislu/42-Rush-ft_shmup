@@ -150,10 +150,7 @@ struct Game
 	int		boss_health = 0;
 	bool	boss_status = 0;
 	long	spawn_boss_cooldown = 0;
-	//Entity	bullets[MAX_BULLETS];
-	/* Window	game_win;
-	Window	status_win;
-	Entity	player;*/
+	bool	auto_fire_toggle;
 	std::vector<Entity>	enemies;
 	std::vector<Entity>	bullets;
 	std::vector<Entity>	collidables;
