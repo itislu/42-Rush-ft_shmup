@@ -108,9 +108,9 @@ struct Entity
 struct Player : public Entity 
 {
 	constexpr static int max_players = 2;
-	constexpr static std::array<std::array<int, 5>, max_players> controls_sets = 
-		{{{'w', 'a', 's', 'd', ' '}, 
-		  {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, '\n'}}};
+	constexpr static std::array<std::array<int, 6>, max_players> controls_sets = 
+		{{{'w', 'a', 's', 'd', ' ', 'f'}, 
+		  {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, '\n', '-'}}};
 	constexpr static std::array<const wchar_t[2], max_players> appearances =
 		{{{L"🛸"},
 		  {L"🚀"}}};
@@ -122,7 +122,8 @@ struct Player : public Entity
 	void print(WINDOW *game_win);
 	
 	const wchar_t *appearance;
-	std::array<int, 5> control_set;
+	std::array<int, 6> control_set;
+	bool auto_fire_toggle;
 };
 
 // struct enemy : public Entity
@@ -150,7 +151,6 @@ struct Game
 	int		boss_health = 0;
 	bool	boss_status = 0;
 	long	spawn_boss_cooldown = 0;
-	bool	auto_fire_toggle;
 	std::vector<Entity>	enemies;
 	std::vector<Entity>	bullets;
 	std::vector<Entity>	collidables;
