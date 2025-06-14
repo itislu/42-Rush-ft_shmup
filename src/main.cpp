@@ -266,7 +266,7 @@ std::optional<Player *> find_nearest_player_in_x(Game *game, Entity *entity)
 	std::optional<Player *> nearest_player = std::nullopt;
 
 	for (auto& player : game->players) {
-		if (player.current_pos.x != entity->current_pos.x) {
+		if (player.current_pos.x != entity->current_pos.x || player.status == 0) {
 			continue;
 		}
 		const int distance_y = std::abs(player.current_pos.y - entity->current_pos.y);
@@ -284,7 +284,7 @@ std::optional<Player *> find_nearest_player_in_y(Game *game, Entity *entity)
 	std::optional<Player *> nearest_player = std::nullopt;
 
 	for (auto& player : game->players) {
-		if (player.current_pos.y != entity->current_pos.y) {
+		if (player.current_pos.y != entity->current_pos.y || player.status == 0) {
 			continue;
 		}
 		const int distance_x = std::abs(player.current_pos.x - entity->current_pos.x);
