@@ -33,9 +33,11 @@ The project was made in a setting which we at 42 Vienna call a *Rush* - we rando
 - Player 1
   - `WASD`: Move your ship
   - `Spacebar`: Shoot
+  - `F`: Toggle auto fire
 - Player 2
   - `Arrow keys`: Move your ship
   - `Enter`: Shoot
+  - `-`: Toggle auto fire
 - `R`: Restart when gameover
 - `Q` | `Esc`: Quit game
 
