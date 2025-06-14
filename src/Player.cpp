@@ -65,7 +65,7 @@ bool Player::on_collision(Entity* entity, Game *game)
 	             && previous_pos == entity->current_pos))) {
 		return false;
 	}
-	if (get_current_time() - invis_frames > 1000 || entity->type == BASIC_ENEMY
+	if (get_current_time() - invis_frames > 1200 || entity->type == BASIC_ENEMY
 	    || entity->type == ENEMY_1 || entity->type == ENEMY_2
 	    || entity->type == BOSS) {
 		invis_frames = get_current_time();
@@ -85,7 +85,7 @@ bool Player::on_collision(Entity* entity, Game *game)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		if (!(get_current_time() - invis_frames < 1000 && (((get_current_time() - invis_frames) / 100) % 2 == 0))) {
+		if (!(get_current_time() - invis_frames < 1200 && (((get_current_time() - invis_frames) / 100) % 2 == 0))) {
 			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
 		}
 	}
