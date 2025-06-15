@@ -19,6 +19,9 @@ bool Player::update(int input, Game* game)
 	if (!status) {
 		return false;
 	}
+	if (shared_players_hp(game) <= 0) {
+		status = false;
+	}
 
 	bool got_input = true;
 	if (input == control_set[0] && current_pos.y != 0) {

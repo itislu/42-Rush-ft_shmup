@@ -500,7 +500,7 @@ void	spawn_entities(Game *game)
 {
 	static int i = 0;
 	if (!(get_current_time() - game->enemy_spawn_cooldown > 5000)
-		|| shared_players_hp(game) == 0)
+		|| shared_players_hp(game) <= 0)
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
 	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 25000 && game->boss_status == 0) //change values
@@ -730,9 +730,6 @@ bool	game_loop(Game *game)
 			game->background.update();
 			if (shared_players_hp(game) <= 0)
 			{
-				for (auto& player : game->players) {
-					mvwaddwstr(game->game_win, player.current_pos.y + 1, (player.current_pos.x * 2) + 2, L"💥");
-				}
 				if (game->gameover_time == 0) {
 					game->gameover_time = get_current_time_in_seconds();
 				}
