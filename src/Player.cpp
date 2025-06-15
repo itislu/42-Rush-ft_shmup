@@ -2,12 +2,12 @@
 #include "time.hpp"
 #include <ncurses.h>
 
-Player::Player(int id, Coordinate position)
+Player::Player(int id_, Coordinate position)
     : Entity(),
-      appearance(appearances.at(id)),
-      control_set{controls_sets.at(id)}
+      appearance(appearances.at(id_)),
+      control_set{controls_sets.at(id_)}
 {
-	this->id = id;
+	id = id_;
 	current_pos = position;
 	status = true;
 	hp = 3;
