@@ -708,10 +708,6 @@ bool	game_loop(Game *game)
 			int input = tolower(getch());
 			if (input == 'q' || input == KEY_ESCAPE)
 				return false;
-			for (auto& player : game->players) {
-				if (input == player.control_set[5])
-					player.auto_fire_toggle = player.auto_fire_toggle == true ? false : true;
-			}
 			if (input == 'r' && shared_players_hp(game) <= 0)
 				return true;
 			if (input == KEY_RESIZE)
@@ -725,10 +721,6 @@ bool	game_loop(Game *game)
 					if (player.update(input, game)) {
 						break;
 					}
-				}
-				for (auto& player : game->players) {
-					if (player.auto_fire_toggle)
-						player.shoot(game);
 				}
 			}
 			update_entities(game);

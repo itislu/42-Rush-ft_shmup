@@ -123,7 +123,7 @@ struct Player : public Entity
 	
 	const wchar_t *appearance;
 	std::array<int, 6> control_set;
-	bool auto_fire_toggle;
+	bool auto_fire_toggle = false;
 };
 
 // struct enemy : public Entity
