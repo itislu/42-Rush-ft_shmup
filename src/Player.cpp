@@ -1,3 +1,4 @@
+#include "Coordinate.hpp"
 #include "game.hpp"
 #include "time.hpp"
 #include <ncurses.h>
@@ -67,9 +68,9 @@ void Player::shoot(Game* game)
 	}
 }
 
-bool Player::on_collision(Entity* entity, Game *game)
+bool Player::on_collision(Entity* entity, Game* game)
 {
-	if (status == false
+	if (!status
 	    || !((current_pos == entity->current_pos)
 	         || (current_pos == entity->previous_pos
 	             && previous_pos == entity->current_pos))) {
@@ -80,8 +81,9 @@ bool Player::on_collision(Entity* entity, Game *game)
 	    || entity->type == BOSS) {
 		invis_frames = get_current_time();
 		hp--;
-		if (entity->type != BOSS)
+		if (entity->type != BOSS) {
 			entity->status = false;
+		}
 	}
 	else if (entity->type != BOSS) {
 		entity->status = false;
@@ -95,11 +97,15 @@ bool Player::on_collision(Entity* entity, Game *game)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		if (!(get_current_time() - invis_frames < 1200 && (((get_current_time() - invis_frames) / 100) % 2 == 0))) {
-			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+		if (get_current_time() - invis_frames >= 1200
+		    || (((get_current_time() - invis_frames) / 100) % 2 != 0)) {
+			mvwaddwstr(game_win,
+			           current_pos.y + 1,
+			           (current_pos.x * 2) + 2,
+			           appearance);
 		}
 	}
 	else {
-		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, L"💥");
+		mvwaddwstr(game_win, current_pos.y + 1, (current_pos.x * 2) + 2, L"💥");
 	}
 }
