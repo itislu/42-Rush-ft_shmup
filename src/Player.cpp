@@ -18,8 +18,13 @@ bool Player::update(int input, Game* game)
 	if (!status) {
 		return false;
 	}
+
+	bool got_input = true;
 	if (input == control_set[0] && current_pos.y != 0) {
 		current_pos.y--;
+	}
+	else if (input == control_set[1] && current_pos.x != 0) {
+		current_pos.x--;
 	}
 	else if (input == control_set[2] && current_pos.y != map_height - 1) {
 		current_pos.y++;
@@ -27,16 +32,21 @@ bool Player::update(int input, Game* game)
 	else if (input == control_set[3] && current_pos.x != map_width - 1) {
 		current_pos.x++;
 	}
-	else if (input == control_set[1] && current_pos.x != 0) {
-		current_pos.x--;
-	}
 	else if (input == control_set[4]) {
+		auto_fire_toggle = false;
 		shoot(game);
 	}
-	else {
-		return false;
+	else if (input == control_set[5]) {
+		auto_fire_toggle = !auto_fire_toggle;
 	}
-	return true;
+	else {
+		got_input = false;
+	}
+
+	if (auto_fire_toggle) {
+		shoot(game);
+	}
+	return got_input;
 }
 
 void Player::shoot(Game* game)
