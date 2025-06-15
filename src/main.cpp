@@ -183,15 +183,15 @@ void	print_game(Game *game)
 			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_CYAN), 0);
 		}
 		else if (bullet.type == HOMING_BULLET) {
-			if (bullet.source == BOSS)
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
-			else
-				wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
+			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
 			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"● ");
-			if (bullet.source == BOSS)
-				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
-			else
-				wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
+			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_ORANGE), 0);
+		}
+		else if (bullet.type == TRUE_HOMING_BULLET)
+		{
+			wattr_on(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
+			mvwaddwstr(game->game_win, bullet.current_pos.y + 1, bullet.current_pos.x * 2 + 2, L"● ");
+			wattr_off(game->game_win, A_BOLD | COLOR_PAIR(COLOR_RED), 0);
 		}
 	}
 	for (auto& player : game->players) {
@@ -249,6 +249,7 @@ void	spawn_enemy_bullet(Game *game, Entity *enemy, int bullet_type, int source)
 	bullet.speed = 1000;
 	bullet.current_pos.y = enemy->current_pos.y;
 	bullet.current_pos.x = enemy->current_pos.x;
+	bullet.pattern = {LEFT};
 	game->bullets.push_back(bullet);
 }
 
@@ -265,7 +266,7 @@ std::optional<Player *> find_nearest_player_in_x(Game *game, Entity *entity)
 	std::optional<Player *> nearest_player = std::nullopt;
 
 	for (auto& player : game->players) {
-		if (player.current_pos.x != entity->current_pos.x) {
+		if (player.current_pos.x != entity->current_pos.x || player.status == 0) {
 			continue;
 		}
 		const int distance_y = std::abs(player.current_pos.y - entity->current_pos.y);
@@ -277,10 +278,74 @@ std::optional<Player *> find_nearest_player_in_x(Game *game, Entity *entity)
 	return nearest_player;
 }
 
+std::optional<Player *> find_nearest_player_in_y(Game *game, Entity *entity)
+{
+	int min_distance_x = INT_MAX;
+	std::optional<Player *> nearest_player = std::nullopt;
+
+	for (auto& player : game->players) {
+		if (player.current_pos.y != entity->current_pos.y || player.status == 0) {
+			continue;
+		}
+		const int distance_x = std::abs(player.current_pos.x - entity->current_pos.x);
+		if (!nearest_player || distance_x < min_distance_x) {
+			min_distance_x = distance_x;
+			nearest_player = &player;
+		}
+	}
+	return nearest_player;
+}
+
+void	move_true_homing_bullet(Game *game, Entity *bullet)
+{
+	auto nearest_player_y = find_nearest_player_in_y(game, bullet);
+	auto nearest_player_x = find_nearest_player_in_x(game, bullet);
+	if (nearest_player_y && nearest_player_x)
+	{
+		const int distance_y = std::abs((*nearest_player_y)->current_pos.x - bullet->current_pos.x);
+		const int distance_x = std::abs((*nearest_player_x)->current_pos.y - bullet->current_pos.y);
+		if (distance_y < distance_x)
+		{
+			if ((*nearest_player_y)->current_pos.x < bullet->current_pos.x)
+				bullet->pattern = {LEFT};
+			else
+				bullet->pattern = {RIGHT};
+		}
+		else
+		{
+			if ((*nearest_player_x)->current_pos.y < bullet->current_pos.y)
+				bullet->pattern = {UP};
+			else
+				bullet->pattern = {DOWN};
+		}
+	}
+	else if (nearest_player_y)
+	{
+		if ((*nearest_player_y)->current_pos.x < bullet->current_pos.x)
+			bullet->pattern = {LEFT};
+		else
+			bullet->pattern = {RIGHT};
+	}
+	else if (nearest_player_x)
+	{
+		if ((*nearest_player_x)->current_pos.y < bullet->current_pos.y)
+			bullet->pattern = {UP};
+		else
+			bullet->pattern = {DOWN};
+	}
+	bullet->current_pos.y += bullet->pattern[0].y;
+	bullet->current_pos.x += bullet->pattern[0].x;
+}
+
 void	move_enemy_bullets(Game *game, Entity *bullet)
 {
 	bullet->move_cooldown = get_current_time();
 	bullet->previous_pos = bullet->current_pos;
+	if (bullet->type == TRUE_HOMING_BULLET)
+	{
+		move_true_homing_bullet(game, bullet);
+		return ;
+	}
 	if (bullet->type == HOMING_BULLET && bullet->direction == 0)
 	{
 		auto nearest_player = find_nearest_player_in_x(game, bullet);
@@ -323,8 +388,8 @@ void	update_entities(Game *game)
 				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 60)
-			|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 120)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 50)
+			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 170)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
@@ -351,10 +416,10 @@ void	update_entities(Game *game)
 			&& get_current_time() - game->enemies[i].move_cooldown > 200)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
-				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, BOSS);
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
+				spawn_enemy_bullet(game, &game->enemies[i], TRUE_HOMING_BULLET, BOSS);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 400)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > 200)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BOSS);
 	}
 }
@@ -398,7 +463,7 @@ void	spawn_enemy_2(Game *game, int y, int x)
 	enemy.current_pos.x = x;
 	enemy.hp = 1;
 	enemy.damage = 1;
-	enemy.shoot_cooldown = get_current_time() + rand() % 2000;
+	enemy.shoot_cooldown = get_current_time() - rand() % 2000;
 	enemy.move_cooldown = get_current_time() - rand() % 2000;
 	enemy.pattern = {LEFT, UP, LEFT, DOWN, LEFT, DOWN, LEFT, UP};
 	game->enemies.push_back(enemy);
@@ -418,7 +483,16 @@ void	spawn_boss(Game *game, int y, int x, int id)
 	enemy.damage = 2;
 	enemy.shoot_cooldown = get_current_time();
 	enemy.move_cooldown = get_current_time();
-	enemy.pattern = {UP, UP, UP, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP, UP, UP};
+	for (int i = 0; i < (map_height / 2) - 3; i++){
+		enemy.pattern.push_back(UP);
+	}
+	for (int i = 0; i < ((map_height / 2) - 3) * 2; i++){
+		enemy.pattern.push_back(DOWN);
+	}
+	for (int i = 0; i < (map_height / 2) - 3; i++){
+		enemy.pattern.push_back(UP);
+	}
+	//enemy.pattern = {UP, UP, UP, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP, UP, UP};
 	game->enemies.push_back(enemy);
 }
 
@@ -514,6 +588,10 @@ void	check_enemy_collision(Game *game, Entity *entity, int type)
 			else if (type == BOSS) {
 				game->boss_health--;
 				if (game->boss_health <= 0) {
+					for (auto& player : game->players) {
+						if (player.status)
+							player.hp += 1;
+					}
 					game->score += BOSS_POINTS;
 					game->spawn_boss_cooldown = get_current_time();
 					game->boss_status = 0;
@@ -537,12 +615,13 @@ void	check_collisions(Game *game)
 			check_bullet_collision(game, &game->bullets[i], ENEMY_BULLET);
 			check_bullet_collision(game, &game->bullets[i], ENEMY_1_BULLET);
 			check_bullet_collision(game, &game->bullets[i], HOMING_BULLET);
+			check_bullet_collision(game, &game->bullets[i], TRUE_HOMING_BULLET);
 			check_enemy_collision(game, &game->bullets[i], BASIC_ENEMY);
 			check_enemy_collision(game, &game->bullets[i], ENEMY_2);
 			check_enemy_collision(game, &game->bullets[i], ENEMY_1);
 			check_enemy_collision(game, &game->bullets[i], BOSS);
 		}
-		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET || game->bullets[i].type == ENEMY_1_BULLET))
+		if (game->bullets[i].status == 1 && (game->bullets[i].type == ENEMY_BULLET || game->bullets[i].type == HOMING_BULLET || game->bullets[i].type == ENEMY_1_BULLET || game->bullets[i].type == TRUE_HOMING_BULLET))
 		{
 			for (auto& player : game->players) {
 				player.on_collision(&game->bullets[i], game);

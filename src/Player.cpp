@@ -1,3 +1,4 @@
+#include "Coordinate.hpp"
 #include "game.hpp"
 #include "time.hpp"
 #include <ncurses.h>
@@ -21,8 +22,13 @@ bool Player::update(int input, Game* game)
 	if (shared_players_hp(game) <= 0) {
 		status = false;
 	}
+
+	bool got_input = true;
 	if (input == control_set[0] && current_pos.y != 0) {
 		current_pos.y--;
+	}
+	else if (input == control_set[1] && current_pos.x != 0) {
+		current_pos.x--;
 	}
 	else if (input == control_set[2] && current_pos.y != map_height - 1) {
 		current_pos.y++;
@@ -30,16 +36,21 @@ bool Player::update(int input, Game* game)
 	else if (input == control_set[3] && current_pos.x != map_width - 1) {
 		current_pos.x++;
 	}
-	else if (input == control_set[1] && current_pos.x != 0) {
-		current_pos.x--;
-	}
 	else if (input == control_set[4]) {
+		auto_fire_toggle = false;
 		shoot(game);
 	}
-	else {
-		return false;
+	else if (input == control_set[5]) {
+		auto_fire_toggle = !auto_fire_toggle;
 	}
-	return true;
+	else {
+		got_input = false;
+	}
+
+	if (auto_fire_toggle) {
+		shoot(game);
+	}
+	return got_input;
 }
 
 void Player::shoot(Game* game)
@@ -60,21 +71,22 @@ void Player::shoot(Game* game)
 	}
 }
 
-bool Player::on_collision(Entity* entity, Game *game)
+bool Player::on_collision(Entity* entity, Game* game)
 {
-	if (status == false
+	if (!status
 	    || !((current_pos == entity->current_pos)
 	         || (current_pos == entity->previous_pos
 	             && previous_pos == entity->current_pos))) {
 		return false;
 	}
-	if (get_current_time() - invis_frames > 1000 || entity->type == BASIC_ENEMY
+	if (get_current_time() - invis_frames > 1200 || entity->type == BASIC_ENEMY
 	    || entity->type == ENEMY_1 || entity->type == ENEMY_2
 	    || entity->type == BOSS) {
 		invis_frames = get_current_time();
 		hp--;
-		if (entity->type != BOSS)
+		if (entity->type != BOSS) {
 			entity->status = false;
+		}
 	}
 	else if (entity->type != BOSS) {
 		entity->status = false;
@@ -88,11 +100,15 @@ bool Player::on_collision(Entity* entity, Game *game)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		if (!(get_current_time() - invis_frames < 1000 && (((get_current_time() - invis_frames) / 100) % 2 == 0))) {
-			mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, appearance);
+		if (get_current_time() - invis_frames >= 1200
+		    || (((get_current_time() - invis_frames) / 100) % 2 != 0)) {
+			mvwaddwstr(game_win,
+			           current_pos.y + 1,
+			           (current_pos.x * 2) + 2,
+			           appearance);
 		}
 	}
 	else {
-		mvwaddwstr(game_win, current_pos.y + 1, current_pos.x * 2 + 2, L"💥");
+		mvwaddwstr(game_win, current_pos.y + 1, (current_pos.x * 2) + 2, L"💥");
 	}
 }
