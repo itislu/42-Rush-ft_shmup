@@ -142,6 +142,35 @@ void print_gameover(Game *game)
 	}
 }
 
+void add_explosion(Game *game, Coordinate pos)
+{
+	Entity explosion;
+	explosion.status = 1;
+	explosion.type = EXPLOSION;
+	explosion.current_pos = pos;
+	explosion.hp = 2; //life_span
+	game->explosions.push_back(explosion);
+}
+
+void print_and_remove_explosions(Game *game)
+{
+	for (auto& explosion : game->explosions) {
+		mvwaddwstr(game->game_win, explosion.current_pos.y + 1, explosion.current_pos.x * 2 + 2, L"💥");
+		explosion.hp--;
+		if (explosion.hp <= 0)
+			explosion.status = 0;
+	}
+	game->explosions.erase(
+		std::remove_if(game->explosions.begin(), game->explosions.end(), 
+			[](Entity& object){ 
+				if (object.status == false)
+					return (true);
+				else
+					return (false);
+			}), 
+		game->explosions.end());
+}
+
 void	print_game(Game *game)
 {
 	// Clear window
@@ -155,6 +184,9 @@ void	print_game(Game *game)
 
 	// Background
 	game->background.print(game->game_win);
+
+	// Explosions
+	print_and_remove_explosions(game);
 
 	// Entities
 	for (auto& bullet : game->bullets) {
@@ -556,6 +588,7 @@ void	check_bullet_collision(Game *game, Entity *entity, int type)
 		{
 			game->bullets[i].status = false;
 			entity->status = false;
+			add_explosion(game, entity->current_pos);
 		}
 	}
 }
@@ -566,6 +599,7 @@ void kill_boss(Game *game)
 	{
 		if (game->enemies[i].type == BOSS && game->boss_health <= 0) {
 					game->enemies[i].status = false;
+					add_explosion(game, game->enemies[i].current_pos);
 				}
 	}
 }
@@ -600,7 +634,10 @@ void	check_enemy_collision(Game *game, Entity *entity, int type)
 			}
 			entity->status = false;
 			if (type != BOSS)
+			{
 				game->enemies[i].status = false;
+				add_explosion(game, game->enemies[i].current_pos);
+			}
 			return ;
 		}
 	}

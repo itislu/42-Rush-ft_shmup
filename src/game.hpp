@@ -72,6 +72,7 @@ enum EntityType
 	TRUE_HOMING_BULLET,
 	COLLIDABLE,
 	BOSS,
+	EXPLOSION,
 };
 
 struct Game;
@@ -153,6 +154,7 @@ struct Game
 	long	spawn_boss_cooldown = 0;
 	std::vector<Entity>	enemies;
 	std::vector<Entity>	bullets;
+	std::vector<Entity>	explosions;
 	std::vector<Entity>	collidables;
 	Background	background;
 };
