@@ -144,7 +144,7 @@ void print_gameover(Game *game)
 
 void add_explosion(Game *game, Coordinate pos)
 {
-	Entity explosion;
+	Entity explosion = {};
 	explosion.status = 1;
 	explosion.type = EXPLOSION;
 	explosion.current_pos = pos;
