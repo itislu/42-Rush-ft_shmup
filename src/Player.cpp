@@ -58,7 +58,7 @@ void Player::shoot(Game* game)
 	if (!status) {
 		return;
 	}
-	if (get_current_time() - shoot_cooldown > 200) {
+	if (get_current_time() - shoot_cooldown > PLAYER_SHOOT_COOLDOWN) {
 		shoot_cooldown = get_current_time();
 
 		Entity bullet = {};
@@ -79,7 +79,7 @@ bool Player::on_collision(Entity* entity, Game* game)
 	             && previous_pos == entity->current_pos))) {
 		return false;
 	}
-	if (get_current_time() - invis_frames > 1200 || entity->type == BASIC_ENEMY
+	if (get_current_time() - invis_frames > PLAYER_INVIS_FRAMES || entity->type == BASIC_ENEMY
 	    || entity->type == ENEMY_1 || entity->type == ENEMY_2
 	    || entity->type == BOSS) {
 		invis_frames = get_current_time();
@@ -101,7 +101,7 @@ bool Player::on_collision(Entity* entity, Game* game)
 void Player::print(WINDOW* game_win)
 {
 	if (status) {
-		if (get_current_time() - invis_frames >= 1200
+		if (get_current_time() - invis_frames >= PLAYER_INVIS_FRAMES
 		    || (((get_current_time() - invis_frames) / 100) % 2 != 0)) {
 			mvwaddwstr(game_win,
 			           current_pos.y + 1,

@@ -17,13 +17,13 @@ Background::Background()
 void Background::update()
 {
 	// Spawn
-	if (get_current_time() - spawn_cooldown > 100) {
+	if (get_current_time() - spawn_cooldown > BACKGROUND_SPAWN_COOLDOWN) {
 		spawn_cooldown = get_current_time();
 		spawn(map_width);
 	}
 
 	// Move
-	if (get_current_time() - move_cooldown > 80) {
+	if (get_current_time() - move_cooldown > BACKGROUND_MOVE_COOLDOWN) {
 		move_cooldown = get_current_time();
 
 		for (auto& bg : entities) {
