@@ -47,6 +47,20 @@ bool Player::update(int input, Game* game)
 		got_input = false;
 	}
 
+	if (active_powerup && get_current_time() - powerup_time > POWERUP_ACTIVE_TIME)
+	{
+		active_powerup = 0;
+	}
+
+	if (game->powerup.status == 1
+		&& game->powerup.current_pos.y == current_pos.y
+		&& game->powerup.current_pos.x == current_pos.x) {
+		active_powerup = game->powerup.type;
+		game->powerup.status = 0;
+		game->powerup_spawn_cooldown = get_current_time();
+		powerup_time = get_current_time();
+	}
+
 	if (auto_fire_toggle) {
 		shoot(game);
 	}
@@ -61,13 +75,24 @@ void Player::shoot(Game* game)
 	if (get_current_time() - shoot_cooldown > PLAYER_SHOOT_COOLDOWN) {
 		shoot_cooldown = get_current_time();
 
-		Entity bullet = {};
-		bullet.type = PLAYER_BULLET;
-		bullet.status = true;
-		bullet.damage = 1;
-		bullet.speed = 1000;
-		bullet.current_pos = current_pos;
-		game->bullets.push_back(bullet);
+		int bullet_count = 1;
+		if (active_powerup == POWERUP_TRIPLE_SHOT)
+			bullet_count = 3;
+
+		for (int i = 0; i < bullet_count; i++)
+		{
+			Entity bullet = {};
+			bullet.type = PLAYER_BULLET;
+			bullet.status = true;
+			bullet.damage = 1;
+			bullet.speed = 1000;
+			bullet.current_pos = current_pos;
+			if (i == 1)
+				bullet.current_pos.y--;
+			if (i == 2)
+				bullet.current_pos.y++;
+			game->bullets.push_back(bullet);
+		}
 	}
 }
 

@@ -24,6 +24,11 @@
 #define BACKGROUND_SPAWN_COOLDOWN 100
 #define BACKGROUND_MOVE_COOLDOWN 80
 
+#define POWERUP_SPAWN_COOLDOWN 10000 //should be more
+#define POWERUP_DESPAWN_COOLDOWN 6000
+#define POWERUP_DESPAWN_BLINKING 4000
+#define POWERUP_ACTIVE_TIME 5000
+
 #define PLAYER_SHOOT_COOLDOWN 200
 #define PLAYER_INVIS_FRAMES 1200
 #define PLAYER_BULLET_MOVE_COOLDOWN 20
@@ -98,6 +103,7 @@ enum EntityType
 	COLLIDABLE,
 	BOSS,
 	EXPLOSION,
+	POWERUP_TRIPLE_SHOT,
 };
 
 struct Game;
@@ -150,6 +156,8 @@ struct Player : public Entity
 	const wchar_t *appearance;
 	std::array<int, 6> control_set;
 	bool auto_fire_toggle = false;
+	int active_powerup = 0;
+	long powerup_time = 0;
 };
 
 // struct enemy : public Entity
@@ -182,6 +190,9 @@ struct Game
 	std::vector<Entity>	explosions;
 	std::vector<Entity>	collidables;
 	Background	background;
+	Entity		powerup;
+	long		powerup_spawn_cooldown = 0;
+	long		powerup_despawn_cooldown = 0;
 };
 
 int shared_players_hp(Game *game);

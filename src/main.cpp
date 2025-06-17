@@ -188,6 +188,17 @@ void	print_game(Game *game)
 	// Explosions
 	print_and_remove_explosions(game);
 
+	// Print Powerups
+	if (game->powerup.status == 1) {
+		if (get_current_time() - game->powerup_despawn_cooldown > POWERUP_DESPAWN_BLINKING)
+		{
+			if (((get_current_time() - game->powerup_despawn_cooldown) / 100) % 2 != 0)
+				mvwaddwstr(game->game_win, game->powerup.current_pos.y + 1, game->powerup.current_pos.x * 2 + 2, L"⭐");
+		}
+		else
+			mvwaddwstr(game->game_win, game->powerup.current_pos.y + 1, game->powerup.current_pos.x * 2 + 2, L"⭐");
+	}
+
 	// Entities
 	for (auto& bullet : game->bullets) {
 		if (!bullet.status) {
@@ -405,6 +416,23 @@ void	move_enemy(Entity *enemy)
 	enemy->current_pos.y += enemy->pattern[enemy->pattern_idx].y;
 	enemy->current_pos.x += enemy->pattern[enemy->pattern_idx].x;
 	enemy->pattern_idx++;
+}
+
+void	spawn_or_despawn_powerup(Game *game)
+{
+	if (game->powerup.status == 0 && get_current_time() - game->powerup_spawn_cooldown > POWERUP_SPAWN_COOLDOWN)
+	{
+		game->powerup.status = 1;
+		game->powerup.type = POWERUP_TRIPLE_SHOT;
+		game->powerup.current_pos.y = rand() % map_height;
+		game->powerup.current_pos.x = rand() % map_width;//(rand() % (map_width / 2)) + (map_width / 2); //if we want it to only spawn on right side (more difficult to reach as well as more predictable)
+		game->powerup_despawn_cooldown = get_current_time();
+	}
+	else if (game->powerup.status == 1 && get_current_time() - game->powerup_despawn_cooldown > POWERUP_DESPAWN_COOLDOWN)
+	{
+		game->powerup.status = 0;
+		game->powerup_spawn_cooldown = get_current_time();
+	}
 }
 
 void	update_entities(Game *game)
@@ -764,6 +792,7 @@ bool	game_loop(Game *game)
 			check_collisions(game);
 			prune_inactive(game);
 			spawn_entities(game);
+			spawn_or_despawn_powerup(game);
 			game->background.update();
 			if (shared_players_hp(game) <= 0)
 			{
