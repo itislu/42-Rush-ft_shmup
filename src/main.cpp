@@ -412,16 +412,16 @@ void	update_entities(Game *game)
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET
-			&& get_current_time() - game->bullets[i].move_cooldown > 20)
+			&& get_current_time() - game->bullets[i].move_cooldown > PLAYER_BULLET_MOVE_COOLDOWN)
 			move_p_bullet(&game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source != BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80)
-				|| (game->bullets[i].type == ENEMY_1_BULLET && get_current_time() - game->bullets[i].move_cooldown > 100)
-				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_BULLET_MOVE_COOLDOWN)
+				|| (game->bullets[i].type == ENEMY_1_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_1_BULLET_MOVE_COOLDOWN)
+				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > HOMING_BULLET_MOVE_COOLDOWN)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 50)
-			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 170)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > BOSS_ENEMY_BULLET_MOVE_COOLDOWN)
+			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > TRUE_HOMING_BULLET_MOVE_COOLDOWN)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
