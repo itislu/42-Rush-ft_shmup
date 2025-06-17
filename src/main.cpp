@@ -148,7 +148,7 @@ void add_explosion(Game *game, Coordinate pos)
 	explosion.status = 1;
 	explosion.type = EXPLOSION;
 	explosion.current_pos = pos;
-	explosion.hp = 2; //life_span
+	explosion.hp = 4; //life_span
 	game->explosions.push_back(explosion);
 }
 
