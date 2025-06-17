@@ -21,8 +21,33 @@
 #define STATUS_WINDOW_X 0
 #define STATUS_WINDOW_HEIGHT 3
 
-#define MAX_ENEMIES 100
-#define MAX_BULLETS 100
+#define BACKGROUND_SPAWN_COOLDOWN 100
+#define BACKGROUND_MOVE_COOLDOWN 80
+
+#define PLAYER_SHOOT_COOLDOWN 200
+#define PLAYER_INVIS_FRAMES 1200
+#define PLAYER_BULLET_MOVE_COOLDOWN 20
+
+#define ENEMY_SPAWN_COOLDOWN 5000
+#define BOSS_SPAWN_COOLDOWN 25000
+
+#define BASIC_ENEMY_MOVE_COOLDOWN 350
+#define BASIC_ENEMY_SHOOT_COOLDOWN 1200
+#define ENEMY_BULLET_MOVE_COOLDOWN 80
+
+#define ENEMY_1_MOVE_COOLDOWN 300
+#define ENEMY_1_SHOOT_COOLDOWN 1500
+#define ENEMY_1_BULLET_MOVE_COOLDOWN 100
+
+#define ENEMY_2_MOVE_COOLDOWN 350
+#define ENEMY_2_SHOOT_COOLDOWN 2500
+#define HOMING_BULLET_MOVE_COOLDOWN 180
+
+#define BOSS_MOVE_COOLDOWN 200
+#define BOSS_TRUE_HOMING_BULLET_SHOOT_COOLDOWN 1000
+#define BOSS_ENEMY_BULLET_SHOOT_COOLDOWN 200
+#define BOSS_ENEMY_BULLET_MOVE_COOLDOWN 50
+#define TRUE_HOMING_BULLET_MOVE_COOLDOWN 170
 
 #define KEY_ESCAPE 27
 
@@ -72,6 +97,7 @@ enum EntityType
 	TRUE_HOMING_BULLET,
 	COLLIDABLE,
 	BOSS,
+	EXPLOSION,
 };
 
 struct Game;
@@ -153,11 +179,13 @@ struct Game
 	long	spawn_boss_cooldown = 0;
 	std::vector<Entity>	enemies;
 	std::vector<Entity>	bullets;
+	std::vector<Entity>	explosions;
 	std::vector<Entity>	collidables;
 	Background	background;
 };
 
 int shared_players_hp(Game *game);
+void add_explosion(Game *game, Coordinate pos);
 
 //background
 //collidables

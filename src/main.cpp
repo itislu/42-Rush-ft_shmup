@@ -142,6 +142,35 @@ void print_gameover(Game *game)
 	}
 }
 
+void add_explosion(Game *game, Coordinate pos)
+{
+	Entity explosion = {};
+	explosion.status = 1;
+	explosion.type = EXPLOSION;
+	explosion.current_pos = pos;
+	explosion.hp = 4; //life_span
+	game->explosions.push_back(explosion);
+}
+
+void print_and_remove_explosions(Game *game)
+{
+	for (auto& explosion : game->explosions) {
+		mvwaddwstr(game->game_win, explosion.current_pos.y + 1, explosion.current_pos.x * 2 + 2, L"💥");
+		explosion.hp--;
+		if (explosion.hp <= 0)
+			explosion.status = 0;
+	}
+	game->explosions.erase(
+		std::remove_if(game->explosions.begin(), game->explosions.end(), 
+			[](Entity& object){ 
+				if (object.status == false)
+					return (true);
+				else
+					return (false);
+			}), 
+		game->explosions.end());
+}
+
 void	print_game(Game *game)
 {
 	// Clear window
@@ -155,6 +184,9 @@ void	print_game(Game *game)
 
 	// Background
 	game->background.print(game->game_win);
+
+	// Explosions
+	print_and_remove_explosions(game);
 
 	// Entities
 	for (auto& bullet : game->bullets) {
@@ -380,46 +412,46 @@ void	update_entities(Game *game)
 	for (size_t i = 0; i < game->bullets.size(); i++)
 	{
 		if (game->bullets[i].status == 1 && game->bullets[i].type == PLAYER_BULLET
-			&& get_current_time() - game->bullets[i].move_cooldown > 20)
+			&& get_current_time() - game->bullets[i].move_cooldown > PLAYER_BULLET_MOVE_COOLDOWN)
 			move_p_bullet(&game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source != BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 80)
-				|| (game->bullets[i].type == ENEMY_1_BULLET && get_current_time() - game->bullets[i].move_cooldown > 100)
-				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 180)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_BULLET_MOVE_COOLDOWN)
+				|| (game->bullets[i].type == ENEMY_1_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_1_BULLET_MOVE_COOLDOWN)
+				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > HOMING_BULLET_MOVE_COOLDOWN)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > 50)
-			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > 170)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > BOSS_ENEMY_BULLET_MOVE_COOLDOWN)
+			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > TRUE_HOMING_BULLET_MOVE_COOLDOWN)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
-			&& get_current_time() - game->enemies[i].move_cooldown > 350)
+			&& get_current_time() - game->enemies[i].move_cooldown > BASIC_ENEMY_MOVE_COOLDOWN)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1200)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > BASIC_ENEMY_SHOOT_COOLDOWN)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BASIC_ENEMY);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
-			&& get_current_time() - game->enemies[i].move_cooldown > 300)
+			&& get_current_time() - game->enemies[i].move_cooldown > ENEMY_1_MOVE_COOLDOWN)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1500)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > ENEMY_1_SHOOT_COOLDOWN)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_1_BULLET, ENEMY_1);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
-			&& get_current_time() - game->enemies[i].move_cooldown > 350)
+			&& get_current_time() - game->enemies[i].move_cooldown > ENEMY_2_MOVE_COOLDOWN)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 2500)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > ENEMY_2_SHOOT_COOLDOWN)
 				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, ENEMY_2);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BOSS
-			&& get_current_time() - game->enemies[i].move_cooldown > 200)
+			&& get_current_time() - game->enemies[i].move_cooldown > BOSS_MOVE_COOLDOWN)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 1000)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > BOSS_TRUE_HOMING_BULLET_SHOOT_COOLDOWN)
 				spawn_enemy_bullet(game, &game->enemies[i], TRUE_HOMING_BULLET, BOSS);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
-			&& get_current_time() - game->enemies[i].shoot_cooldown > 200)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > BOSS_ENEMY_BULLET_SHOOT_COOLDOWN)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BOSS);
 	}
 }
@@ -499,11 +531,11 @@ void	spawn_boss(Game *game, int y, int x, int id)
 void	spawn_entities(Game *game)
 {
 	static int i = 0;
-	if (!(get_current_time() - game->enemy_spawn_cooldown > 5000)
+	if (!(get_current_time() - game->enemy_spawn_cooldown > ENEMY_SPAWN_COOLDOWN)
 		|| shared_players_hp(game) <= 0)
 		return ;
 	game->enemy_spawn_cooldown = get_current_time();
-	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > 25000 && game->boss_status == 0) //change values
+	if (game->score >= 500 && get_current_time() - game->spawn_boss_cooldown > BOSS_SPAWN_COOLDOWN && game->boss_status == 0) //change values
 	{
 		//game->boss_health 
 		spawn_boss(game,  map_height / 2 + 1, map_width - 6, 1);
@@ -556,6 +588,7 @@ void	check_bullet_collision(Game *game, Entity *entity, int type)
 		{
 			game->bullets[i].status = false;
 			entity->status = false;
+			add_explosion(game, entity->current_pos);
 		}
 	}
 }
@@ -566,6 +599,7 @@ void kill_boss(Game *game)
 	{
 		if (game->enemies[i].type == BOSS && game->boss_health <= 0) {
 					game->enemies[i].status = false;
+					add_explosion(game, game->enemies[i].current_pos);
 				}
 	}
 }
@@ -600,7 +634,10 @@ void	check_enemy_collision(Game *game, Entity *entity, int type)
 			}
 			entity->status = false;
 			if (type != BOSS)
+			{
 				game->enemies[i].status = false;
+				add_explosion(game, game->enemies[i].current_pos);
+			}
 			return ;
 		}
 	}
