@@ -87,9 +87,11 @@ bool Player::on_collision(Entity* entity, Game* game)
 		if (entity->type != BOSS) {
 			entity->status = false;
 		}
+		add_explosion(game, entity->current_pos);
 	}
 	else if (entity->type != BOSS) {
 		entity->status = false;
+		add_explosion(game, entity->current_pos);
 	}
 	if (shared_players_hp(game) <= 0) {
 		status = false;

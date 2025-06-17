@@ -160,6 +160,7 @@ struct Game
 };
 
 int shared_players_hp(Game *game);
+void add_explosion(Game *game, Coordinate pos);
 
 //background
 //collidables
