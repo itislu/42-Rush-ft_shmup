@@ -65,8 +65,9 @@
 #define RIGHT {1, 0}
 #define LEFT {-1, 0}
 
-#define ENEMY_1_POINTS 5
-#define BASIC_ENEMY_POINTS 10
+#define BULLET_POINTS 1
+#define ENEMY_1_POINTS 10
+#define BASIC_ENEMY_POINTS 25
 #define ENEMY_2_POINTS 50
 #define BOSS_POINTS 1000
 

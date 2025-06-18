@@ -616,6 +616,7 @@ void	check_bullet_collision(Game *game, Entity *entity, int type)
 		{
 			game->bullets[i].status = false;
 			entity->status = false;
+			game->score += BULLET_POINTS;
 			add_explosion(game, entity->current_pos);
 		}
 	}
