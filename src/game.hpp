@@ -194,6 +194,8 @@ struct Game
 	Entity		powerup;
 	long		powerup_spawn_cooldown = 0;
 	long		powerup_despawn_cooldown = 0;
+	int			speed_up_difficulty = 0;
+	long		speed_up_difficulty_cooldown = 0;
 };
 
 int shared_players_hp(Game *game);

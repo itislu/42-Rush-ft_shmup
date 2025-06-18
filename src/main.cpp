@@ -443,43 +443,43 @@ void	update_entities(Game *game)
 			&& get_current_time() - game->bullets[i].move_cooldown > PLAYER_BULLET_MOVE_COOLDOWN)
 			move_p_bullet(&game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source != BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_BULLET_MOVE_COOLDOWN)
-				|| (game->bullets[i].type == ENEMY_1_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_1_BULLET_MOVE_COOLDOWN)
-				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > HOMING_BULLET_MOVE_COOLDOWN)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_BULLET_MOVE_COOLDOWN - game->speed_up_difficulty)
+				|| (game->bullets[i].type == ENEMY_1_BULLET && get_current_time() - game->bullets[i].move_cooldown > ENEMY_1_BULLET_MOVE_COOLDOWN - game->speed_up_difficulty)
+				|| (game->bullets[i].type == HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > HOMING_BULLET_MOVE_COOLDOWN - game->speed_up_difficulty)))
 			move_enemy_bullets(game, &game->bullets[i]);
 		else if (game->bullets[i].status == 1 && game->bullets[i].source == BOSS
-			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > BOSS_ENEMY_BULLET_MOVE_COOLDOWN)
-			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > TRUE_HOMING_BULLET_MOVE_COOLDOWN)))
+			&& ((game->bullets[i].type == ENEMY_BULLET && get_current_time() - game->bullets[i].move_cooldown > BOSS_ENEMY_BULLET_MOVE_COOLDOWN - game->speed_up_difficulty)
+			|| (game->bullets[i].type == TRUE_HOMING_BULLET && get_current_time() - game->bullets[i].move_cooldown > TRUE_HOMING_BULLET_MOVE_COOLDOWN - game->speed_up_difficulty)))
 			move_enemy_bullets(game, &game->bullets[i]);
 	}
 	for (size_t i = 0; i < game->enemies.size(); i++)
 	{
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
-			&& get_current_time() - game->enemies[i].move_cooldown > BASIC_ENEMY_MOVE_COOLDOWN)
+			&& get_current_time() - game->enemies[i].move_cooldown > BASIC_ENEMY_MOVE_COOLDOWN - game->speed_up_difficulty)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BASIC_ENEMY
-			&& get_current_time() - game->enemies[i].shoot_cooldown > BASIC_ENEMY_SHOOT_COOLDOWN)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > BASIC_ENEMY_SHOOT_COOLDOWN - game->speed_up_difficulty)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BASIC_ENEMY);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
-			&& get_current_time() - game->enemies[i].move_cooldown > ENEMY_1_MOVE_COOLDOWN)
+			&& get_current_time() - game->enemies[i].move_cooldown > ENEMY_1_MOVE_COOLDOWN - game->speed_up_difficulty)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_1
-			&& get_current_time() - game->enemies[i].shoot_cooldown > ENEMY_1_SHOOT_COOLDOWN)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > ENEMY_1_SHOOT_COOLDOWN - game->speed_up_difficulty)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_1_BULLET, ENEMY_1);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
-			&& get_current_time() - game->enemies[i].move_cooldown > ENEMY_2_MOVE_COOLDOWN)
+			&& get_current_time() - game->enemies[i].move_cooldown > ENEMY_2_MOVE_COOLDOWN - game->speed_up_difficulty)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == ENEMY_2
-			&& get_current_time() - game->enemies[i].shoot_cooldown > ENEMY_2_SHOOT_COOLDOWN)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > ENEMY_2_SHOOT_COOLDOWN - game->speed_up_difficulty)
 				spawn_enemy_bullet(game, &game->enemies[i], HOMING_BULLET, ENEMY_2);
 		if (game->enemies[i].status == 1 && game->enemies[i].type == BOSS
-			&& get_current_time() - game->enemies[i].move_cooldown > BOSS_MOVE_COOLDOWN)
+			&& get_current_time() - game->enemies[i].move_cooldown > BOSS_MOVE_COOLDOWN - game->speed_up_difficulty)
 				move_enemy(&game->enemies[i]);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && (game->enemies[i].id == 1 || game->enemies[i].id == 3))
-			&& get_current_time() - game->enemies[i].shoot_cooldown > BOSS_TRUE_HOMING_BULLET_SHOOT_COOLDOWN)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > BOSS_TRUE_HOMING_BULLET_SHOOT_COOLDOWN - game->speed_up_difficulty)
 				spawn_enemy_bullet(game, &game->enemies[i], TRUE_HOMING_BULLET, BOSS);
 		if (game->enemies[i].status == 1 && (game->enemies[i].type == BOSS && game->enemies[i].id == 2)
-			&& get_current_time() - game->enemies[i].shoot_cooldown > BOSS_ENEMY_BULLET_SHOOT_COOLDOWN)
+			&& get_current_time() - game->enemies[i].shoot_cooldown > BOSS_ENEMY_BULLET_SHOOT_COOLDOWN - game->speed_up_difficulty)
 				spawn_enemy_bullet(game, &game->enemies[i], ENEMY_BULLET, BOSS);
 	}
 }
@@ -766,6 +766,7 @@ bool	game_loop(Game *game)
 	//spawn_entities(game);
 	wclear(game->status_win);
 	game->score = 0;
+	game->speed_up_difficulty_cooldown = get_current_time_in_seconds();
 	while (1)
 	{
 		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)
@@ -800,6 +801,10 @@ bool	game_loop(Game *game)
 				if (game->gameover_time == 0) {
 					game->gameover_time = get_current_time_in_seconds();
 				}
+			}
+			if (get_current_time_in_seconds() - game->speed_up_difficulty_cooldown >= 10) { //adjust
+				game->speed_up_difficulty_cooldown = get_current_time_in_seconds();
+				game->speed_up_difficulty++;
 			}
 			print_stuff(game);
 		}
