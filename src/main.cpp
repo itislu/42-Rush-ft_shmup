@@ -708,11 +708,9 @@ bool	check_terminal_size(Game *game)
 {
 	int y;
 	int x;
-	long pause_time;
+	long pause_time = get_current_time_in_seconds();
 
 	getmaxyx(stdscr, y, x);
-	if (shared_players_hp(game) > 0)
-		pause_time = get_current_time_in_seconds();
 	while (y < game->term_height || x < game->term_width)
 	{
 		clear();
