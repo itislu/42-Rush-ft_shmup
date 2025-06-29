@@ -171,7 +171,7 @@ struct Game
 	int		status_width;
 	std::vector<Player> players;
 	long	score = 0;
-	long	start_time = 0;
+	long	non_game_time = 0;
 	long	gameover_time = 0;
 	long	enemy_spawn_cooldown = 0;
 	int		boss_health = 0;

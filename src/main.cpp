@@ -100,7 +100,7 @@ void	print_status(Game *game)
 	}
 	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
 	mvwprintw(game->status_win, 1, 4, " Time: %ld", 
-		(shared_hp > 0 ? get_current_time_in_seconds() : game->gameover_time) - game->start_time);
+		(shared_hp > 0 ? get_current_time_in_seconds() : game->gameover_time) - game->non_game_time);
 	mvwaddwstr(game->status_win, 1, game->status_width - 16, L"🏆");
 	mvwprintw(game->status_win, 1, game->status_width - 14, " Score: %ld", game->score);
 	wrefresh(game->status_win);
@@ -727,7 +727,7 @@ bool	check_terminal_size(Game *game)
 		getmaxyx(stdscr, y, x);
 	}
 	if (shared_players_hp(game) > 0)
-		game->start_time += get_current_time_in_seconds() - pause_time;
+		game->non_game_time += get_current_time_in_seconds() - pause_time;
 	init_win(game);
 	nodelay(stdscr, TRUE);
 	return (true);
@@ -736,7 +736,7 @@ bool	check_terminal_size(Game *game)
 bool	game_loop(Game *game)
 {
 	long	time_reference = get_current_time();
-	game->start_time = get_current_time_in_seconds();
+	game->non_game_time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
 	srand(time(NULL));
 	//spawn_entities(game);
