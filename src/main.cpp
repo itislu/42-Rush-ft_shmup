@@ -100,7 +100,7 @@ void	print_status(Game *game)
 	}
 	mvwaddwstr(game->status_win, 1, 2, L"⏱️");
 	mvwprintw(game->status_win, 1, 4, " Time: %ld", 
-		(shared_hp > 0 ? get_current_time_in_seconds() : game->gameover_time) - game->start_time);
+		(shared_hp > 0 ? get_current_time_in_seconds() : game->gameover_time) - game->non_game_time);
 	mvwaddwstr(game->status_win, 1, game->status_width - 16, L"🏆");
 	mvwprintw(game->status_win, 1, game->status_width - 14, " Score: %ld", game->score);
 	wrefresh(game->status_win);
@@ -708,21 +708,26 @@ bool	check_terminal_size(Game *game)
 {
 	int y;
 	int x;
-
 	getmaxyx(stdscr, y, x);
+	if (y >= game->term_height && x >= game->term_width)
+		return (true);
+
+	long pause_time = get_current_time_in_seconds();
+	delete_win(game);
+	nodelay(stdscr, FALSE);
 	while (y < game->term_height || x < game->term_width)
 	{
 		clear();
 		mvprintw(0, 0, "TERMINAL TOO SMALL");
 		mvprintw(1, 0, "  minimum: %dx%d", game->term_height, game->term_width);
 		mvprintw(2, 0, "  current: %dx%d", y, x);
-		nodelay(stdscr, FALSE);
 		int input = tolower(getch());
 		if (input == 'q' || input == KEY_ESCAPE)
 			return false;
-		delete_win(game);
 		getmaxyx(stdscr, y, x);
 	}
+	if (shared_players_hp(game) > 0)
+		game->non_game_time += get_current_time_in_seconds() - pause_time;
 	init_win(game);
 	nodelay(stdscr, TRUE);
 	return (true);
@@ -731,7 +736,7 @@ bool	check_terminal_size(Game *game)
 bool	game_loop(Game *game)
 {
 	long	time_reference = get_current_time();
-	game->start_time = get_current_time_in_seconds();
+	game->non_game_time = get_current_time_in_seconds();
 	nodelay(stdscr, TRUE);
 	srand(time(NULL));
 	//spawn_entities(game);
@@ -742,16 +747,13 @@ bool	game_loop(Game *game)
 		if ((float)(get_current_time() - time_reference) > (float)1000 / FPS)
 		{
 			time_reference = get_current_time();
+			if (!check_terminal_size(game))
+				return false;
 			int input = tolower(getch());
 			if (input == 'q' || input == KEY_ESCAPE)
 				return false;
 			if (input == 'r' && shared_players_hp(game) <= 0)
 				return true;
-			if (input == KEY_RESIZE)
-			{
-				if (!check_terminal_size(game))
-				 return false;
-			}
 			else 
 			{
 				for (auto& player : game->players) {
